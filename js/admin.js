@@ -7,6 +7,7 @@ import { t } from "./i18n.js";
 import { SEMILLA } from "./data.js";
 import { esc, dinero, nombre, tema, idioma, slug, clone, fecha, favicon, ICON, FUENTES, APARIENCIA_BASE, aplicarApariencia, cargarFuentes } from "./store.js";
 import * as db from "./db.js";
+const activo = p => p.activo !== false && p.visible !== false;
 
 favicon();
 const $ = id => document.getElementById(id);
@@ -53,6 +54,7 @@ function login() {
       <div class="campo"><label for="clave">${t("p_clave")}</label><input id="clave" type="password" autocomplete="current-password" required></div>
       <div class="error" id="errLogin"></div>
       <button class="btn btn-verde" id="btnEntrar">${t("p_entrar")}</button>
+      <p class="nota">${t("p_login_ayuda")}</p>
     </form>
   </div>`;
   comunes();
@@ -143,28 +145,30 @@ function vistaProductos() {
     <div class="herramientas">
       <label class="buscar">${ICON.lupa}<input id="fq" type="search" placeholder="${t("p_buscar")}" value="${esc(fq)}"></label>
       <select id="fcat"><option value="">${t("p_todas")}</option>${D.categorias.map(c => `<option value="${c.id}" ${c.id === fcat ? "selected" : ""}>${esc(nombre(c, L))}</option>`).join("")}</select>
+      <button type="button" class="btn btn-borde chico" id="btnImportar">⇪ ${t("p_importar_prod")}</button>
       <button type="button" class="btn btn-tomate chico" id="btnNuevo">+ ${t("p_nuevo")}</button>
     </div>
     <p class="resumen-admin" id="resumen"></p>
-    <table class="tabla"><thead><tr><th>${t("p_col_prod")}</th><th>${t("p_col_cat")}</th><th>${t("p_col_precio")}</th><th>${t("p_col_visible")}</th><th></th></tr></thead><tbody id="filas"></tbody></table>
+    <table class="tabla"><thead><tr><th>${t("p_col_prod")}</th><th>${t("p_col_cat")}</th><th>${t("p_col_precio")}</th><th>${t("p_col_activo")}</th><th></th></tr></thead><tbody id="filas"></tbody></table>
   </div>`;
   $("fq").oninput = e => { fq = e.target.value.trim().toLowerCase(); filas(); };
   $("fcat").onchange = e => { fcat = e.target.value; filas(); };
   $("btnNuevo").onclick = () => formulario();
+  $("btnImportar").onclick = importar;
   filas();
 }
 
 function filas() {
   if (!$("filas")) return;
   const L = lang(), P = D.productos;
-  $("resumen").textContent = t("p_resumen", { n: P.length, v: P.filter(p => p.visible !== false).length, o: P.filter(p => p.antes > p.precio).length });
+  $("resumen").textContent = t("p_resumen", { n: P.length, v: P.filter(activo).length, o: P.filter(p => p.antes > p.precio || p.oferta).length });
   const lista = P.map((p, i) => ({ p, i })).filter(({ p }) => (!fcat || p.cat === fcat) && (!fq || nombre(p, "es").toLowerCase().includes(fq) || nombre(p, "en").toLowerCase().includes(fq)));
   $("filas").innerHTML = lista.length ? lista.map(({ p, i }) => `
-    <tr class="${p.visible === false ? "invisible" : ""}">
-      <td class="celda-prod"><div class="prod-celda"><span class="icono">${p.imagen ? `<img src="${esc(p.imagen)}" alt="">` : esc(p.icono || "🛒")}</span><div><b>${esc(p.es)}</b><small>${esc(p.en || "")} · ${esc(nombre(D.unidades.find(u => u.id === p.unidad), L) || p.unidad)}</small></div></div></td>
+    <tr class="${activo(p) ? "" : "invisible"}">
+      <td class="celda-prod"><div class="prod-celda"><span class="icono">${p.imagen ? `<img src="${esc(p.imagen)}" alt="" loading="lazy" width="35" height="35" onerror="this.parentElement.classList.add('fallo');this.remove()">` : ""}<span class="emoji">${esc(p.icono || "🛒")}</span></span><div><b>${esc(p.es)}</b><small>${esc(p.en || "")} · ${esc(nombre(D.unidades.find(u => u.id === p.unidad), L) || p.unidad)}</small></div></div></td>
       <td><span class="pill">${esc(nombre(D.categorias.find(c => c.id === p.cat), L) || p.cat)}</span></td>
-      <td class="num">${S(p.precio)}${p.antes > p.precio ? ` <s>${S(p.antes)}</s>` : ""}</td>
-      <td><label class="switch"><input type="checkbox" data-vis="${esc(p.id)}" ${p.visible !== false ? "checked" : ""} aria-label="${t("p_col_visible")}"><i></i></label></td>
+      <td class="num"><span class="precio-inline"><input type="number" step="0.01" min="0.01" inputmode="decimal" value="${p.precio}" data-precio="${esc(p.id)}" aria-label="${t("p_precio_inline")}: ${esc(p.es)}"><button type="button" class="mini" data-ok-precio="${esc(p.id)}" title="${t("p_guardar")}" hidden>✓</button></span>${p.antes > p.precio ? ` <s>${S(p.antes)}</s>` : ""}</td>
+      <td><label class="switch"><input type="checkbox" data-vis="${esc(p.id)}" ${activo(p) ? "checked" : ""} aria-label="${t("p_col_activo")}: ${esc(p.es)}"><i></i></label></td>
       <td><div class="acciones">
         <button type="button" class="mini" data-act="sube" data-i="${i}" title="${t("p_subir")}" ${i === 0 ? "disabled" : ""}>${ICON.arriba}</button>
         <button type="button" class="mini" data-act="baja" data-i="${i}" title="${t("p_bajar")}" ${i === P.length - 1 ? "disabled" : ""}>${ICON.abajo}</button>
@@ -182,15 +186,27 @@ function filas() {
     if (a === "baja" && i < P.length - 1) { const l = P.slice(); [l[i + 1], l[i]] = [l[i], l[i + 1]]; guardar(db.reordenar(l)); }
     if (a === "borra" && confirm(t("p_confirmar_borrar", { n: p.es }))) guardar(db.borrarProducto(p.id), t("p_borrado"));
   };
-  $("filas").onchange = e => { const c = e.target.closest("[data-vis]"); if (c) guardar(db.guardarProducto(c.dataset.vis, { visible: c.checked })); };
+  $("filas").onchange = e => {
+    const c = e.target.closest("[data-vis]"); if (c) return guardar(db.guardarProducto(c.dataset.vis, { activo: c.checked, visible: c.checked }), c.checked ? t("p_activo_on") : t("p_activo_off"));
+    const pr = e.target.closest("[data-precio]"); if (pr) guardarPrecio(pr);
+  };
+  $("filas").oninput = e => { const pr = e.target.closest("[data-precio]"); if (pr) pr.nextElementSibling.hidden = false; };
+  $("filas").onkeydown = e => { const pr = e.target.closest("[data-precio]"); if (pr && e.key === "Enter") { e.preventDefault(); pr.blur(); } };
+}
+function guardarPrecio(inp) {
+  const v = parseFloat(inp.value), p = D.productos.find(x => x.id === inp.dataset.precio);
+  if (!(v > 0)) { inp.value = p?.precio ?? ""; return avisar(t("p_err_precio")); }
+  if (p && v === p.precio) { inp.nextElementSibling.hidden = true; return; }
+  if (p && p.antes && !(p.antes > v)) return guardar(db.guardarProducto(p.id, { precio: +v.toFixed(2), antes: null }));
+  guardar(db.guardarProducto(inp.dataset.precio, { precio: +v.toFixed(2) })).then(() => { inp.nextElementSibling.hidden = true; });
 }
 /* tras duplicar, los "orden" quedan con decimales: se normalizan a enteros consecutivos */
-const ordenados = () => D.productos.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+const ordenados = () => db.ordenarProductos(D.productos, D.categorias);
 function idUnico(base) { let id = slug(base), n = 2; while (D.productos.some(p => p.id === id)) id = slug(base) + "-" + n++; return id; }
 
 function formulario(i) {
   const L = lang(), nuevo = i === undefined;
-  const p = nuevo ? { es: "", en: "", cat: D.categorias[0]?.id || "", icono: "🛒", imagen: "", precio: "", antes: "", unidad: D.unidades[0]?.id || "kg", visible: true } : D.productos[i];
+  const p = nuevo ? { es: "", en: "", cat: D.categorias[0]?.id || "", icono: "🛒", imagen: "", precio: "", antes: "", unidad: D.unidades[0]?.id || "kg", activo: true } : D.productos[i];
   const velo = document.createElement("div"); velo.className = "modal-velo";
   velo.innerHTML = `
   <form class="modal" id="formProd">
@@ -203,8 +219,8 @@ function formulario(i) {
       <div class="campo"><label for="f_precio">${t("p_precio")} (${esc(cfg().moneda)})</label><input id="f_precio" type="number" step="0.01" min="0" inputmode="decimal" value="${p.precio}" required></div>
       <div class="campo"><label for="f_antes">${t("p_antes")}</label><input id="f_antes" type="number" step="0.01" min="0" inputmode="decimal" value="${p.antes ?? ""}"></div>
       <div class="campo"><label for="f_icono">${t("p_icono")}</label><div class="icono-preview"><span class="muestra" id="f_muestra"></span><input id="f_icono" value="${esc(p.icono || "")}" maxlength="8"></div></div>
-      <div class="campo"><label for="f_imagen">${t("p_imagen")}</label><input id="f_imagen" type="url" value="${esc(p.imagen || "")}" placeholder="https://…"></div>
-      <label class="campo ancho" style="flex-direction:row;align-items:center;gap:.8rem"><span class="switch"><input type="checkbox" id="f_visible" ${p.visible !== false ? "checked" : ""}><i></i></span>${t("p_visible")}</label>
+      <div class="campo"><label for="f_imagen">${t("p_imagen")}</label><input id="f_imagen" type="url" value="${esc(p.imagen || "")}" placeholder="https://…"><div class="subir-img"><label class="btn btn-borde chico" for="f_archivo">${ICON.nube} ${t("p_imagen_subir")}</label><input type="file" id="f_archivo" accept="image/*" class="sr"><small id="f_subida"></small></div></div>
+      <label class="campo ancho" style="flex-direction:row;align-items:center;gap:.8rem"><span class="switch"><input type="checkbox" id="f_visible" ${activo(p) ? "checked" : ""}><i></i></span>${t("p_visible")}</label>
     </div>
     <div class="error" id="f_error"></div>
     <div class="acciones-form"><button type="button" class="btn btn-borde" id="f_cancelar">${t("p_cancelar")}</button><button class="btn btn-verde">${t("p_guardar")}</button></div>
@@ -212,6 +228,13 @@ function formulario(i) {
   document.body.appendChild(velo);
   const muestra = () => { const img = $("f_imagen").value.trim(); $("f_muestra").innerHTML = img ? `<img src="${esc(img)}" alt="">` : esc($("f_icono").value || "🛒"); };
   $("f_icono").oninput = $("f_imagen").oninput = muestra; muestra();
+  $("f_archivo").onchange = async e => {
+    const a = e.target.files[0]; if (!a) return;
+    if (a.size > 2 * 1024 * 1024) return $("f_subida").textContent = t("p_imagen_grande");
+    $("f_subida").textContent = t("p_imagen_subiendo");
+    try { $("f_imagen").value = await db.subirImagen(a, nuevo ? slug($("f_es").value || "producto") : p.id); $("f_subida").textContent = "✓"; muestra(); }
+    catch (err) { console.error(err); $("f_subida").textContent = t("p_imagen_err"); }
+  };
   const cerrar = () => velo.remove();
   $("f_cancelar").onclick = cerrar; velo.onclick = e => { if (e.target === velo) cerrar(); };
   $("f_es").focus();
@@ -222,9 +245,75 @@ function formulario(i) {
     if (!es) return $("f_error").textContent = t("p_err_nombre");
     if (!(precio > 0)) return $("f_error").textContent = t("p_err_precio");
     if (antes !== null && !(antes > precio)) return $("f_error").textContent = t("p_err_antes");
-    const datos = { es, en: en || es, cat: $("f_cat").value, unidad: $("f_unidad").value, icono: $("f_icono").value.trim() || "🛒", imagen: $("f_imagen").value.trim() || "", precio: +precio.toFixed(2), antes: antes === null ? null : +antes.toFixed(2), visible: $("f_visible").checked };
+    const datos = { es, en: en || es, cat: $("f_cat").value, unidad: $("f_unidad").value, icono: $("f_icono").value.trim() || "🛒", imagen: $("f_imagen").value.trim() || "", precio: +precio.toFixed(2), antes: antes === null ? null : +antes.toFixed(2), activo: $("f_visible").checked, visible: $("f_visible").checked };
     if (nuevo) datos.orden = D.productos.length;
     guardar(db.guardarProducto(nuevo ? idUnico(es) : p.id, datos)); cerrar();
+  };
+}
+
+
+/* ---------- importación masiva (CSV / texto) ---------- */
+function parseCSV(txt) {
+  const filas = [], sep = (txt.split("\n")[0] || "").includes(";") && !(txt.split("\n")[0] || "").includes(",") ? ";" : ",";
+  for (const linea of txt.replace(/\r/g, "").split("\n")) {
+    if (!linea.trim()) continue;
+    const cols = []; let cur = "", q = false;
+    for (let i = 0; i < linea.length; i++) {
+      const ch = linea[i];
+      if (ch === '"') { if (q && linea[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (ch === sep && !q) { cols.push(cur); cur = ""; }
+      else cur += ch;
+    }
+    cols.push(cur); filas.push(cols.map(c => c.trim()));
+  }
+  return filas;
+}
+const buscarId = (lista, texto) => { const n = slug(texto); return lista.find(x => x.id === n || slug(x.es) === n || slug(x.en) === n)?.id; };
+function importar() {
+  const velo = document.createElement("div"); velo.className = "modal-velo";
+  velo.innerHTML = `
+  <div class="modal importar">
+    <h2>${t("p_importar_t")}</h2>
+    <p style="color:var(--tinta-2);margin-bottom:1rem">${t("p_importar_p")}</p>
+    <div class="herramientas">
+      <label class="btn btn-borde chico" for="csvArchivo">${t("p_importar_archivo")}</label><input type="file" id="csvArchivo" accept=".csv,text/csv,text/plain" class="sr">
+      <button type="button" class="btn btn-borde chico" id="csvPlantilla">${t("p_importar_plantilla")}</button>
+    </div>
+    <label class="campo"><span>${t("p_importar_pegar")}</span><textarea id="csvTexto" placeholder="Palta fuerte, frutas, 8.90, kg, si, https://…"></textarea></label>
+    <div class="resultado-importar" id="csvResultado"></div>
+    <div class="acciones-form"><button type="button" class="btn btn-borde" id="csvCerrar">${t("p_cancelar")}</button><button type="button" class="btn btn-verde" id="csvImportar">${t("p_importar_btn")}</button></div>
+  </div>`;
+  document.body.appendChild(velo);
+  const cerrar = () => { velo.remove(); filas(); };
+  $("csvCerrar").onclick = cerrar; velo.onclick = e => { if (e.target === velo) cerrar(); };
+  $("csvArchivo").onchange = e => { const f = e.target.files[0]; if (f) f.text().then(tx => { $("csvTexto").value = tx; }); };
+  $("csvPlantilla").onclick = () => {
+    const csv = "nombre,categoria,precio,unidad,oferta,imagen\nPalta fuerte,frutas,8.90,kg,si,https://ejemplo.com/palta.jpg\nTomate,verduras,3.80,kg,no,\nPollo entero,carnes,10.90,kg,no,";
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })); a.download = "plantilla-productos.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  $("csvImportar").onclick = async () => {
+    const filas = parseCSV($("csvTexto").value), ok = [], errores = [];
+    let inicio = 0;
+    if (filas.length && slug(filas[0][0] || "") === "nombre") inicio = 1;                       // cabecera opcional
+    let orden = D.productos.length;
+    filas.slice(inicio).forEach((f, i) => {
+      const n = i + inicio + 1;
+      if (f.length < 4) return errores.push(t("p_importar_fila", { n, m: t("p_err_columnas") }));
+      const [nombreP, catTxt, precioTxt, uniTxt, ofertaTxt = "", imagen = ""] = f;
+      const cat = buscarId(D.categorias, catTxt), uni = buscarId(D.unidades, uniTxt);
+      const precio = parseFloat(String(precioTxt).replace(",", "."));
+      if (!cat) return errores.push(t("p_importar_fila", { n, m: t("p_err_cat", { c: catTxt }) }));
+      if (!uni) return errores.push(t("p_importar_fila", { n, m: t("p_err_uni", { u: uniTxt }) }));
+      if (!(precio > 0)) return errores.push(t("p_importar_fila", { n, m: t("p_err_precio_fila") }));
+      const oferta = /^(s[ií]|yes|y|1|true)$/i.test(ofertaTxt.trim());
+      const existente = D.productos.find(p => slug(p.es) === slug(nombreP));
+      ok.push({ id: existente ? existente.id : idUnico(nombreP), es: nombreP, en: existente?.en || nombreP, cat, unidad: uni, precio: +precio.toFixed(2), oferta, imagen: imagen.trim(), icono: existente?.icono || "🛒", activo: true, visible: true, orden: existente?.orden ?? orden++ });
+    });
+    const res = $("csvResultado");
+    try { if (ok.length) await db.guardarProductos(ok); }
+    catch (e) { fallo(e); return; }
+    res.innerHTML = `<div class="pub-estado ${errores.length ? "local" : ""}"><i></i>${t("p_importar_res", { ok: ok.length, err: errores.length })}</div>${errores.length ? `<ul>${errores.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`;
+    if (ok.length) avisar(t("p_guardado"));
   };
 }
 
@@ -352,7 +441,7 @@ function vistaDatos() {
       const d = JSON.parse(txt);
       if (!d || !Array.isArray(d.productos) || !d.config) throw 0;
       if (!confirm(t("p_importar_confirmar", { n: d.productos.length }))) return;
-      return db.sembrar({ config: d.config, categorias: d.categorias || D.categorias, unidades: d.unidades || D.unidades, productos: d.productos.map(p => ({ ...p, id: p.id || slug(p.es) })) }).then(() => avisar(t("p_importado")));
+      return db.sembrar({ config: d.config, categorias: d.categorias || D.categorias, unidades: d.unidades || D.unidades, productos: d.productos.map(p => ({ ...p, id: p.id || slug(p.es), activo: p.activo ?? p.visible ?? true })) }).then(() => avisar(t("p_importado")));
     }).catch(err => (err === 0 || err instanceof SyntaxError) ? alert(t("p_import_err")) : fallo(err));
   };
   $("btnSembrar").onclick = () => { if (confirm(t("p_sembrar_confirmar"))) guardar(db.sembrar(SEMILLA), t("p_sembrar_ok")); };

@@ -1,0 +1,17 @@
+{
+  "name": "El Mercado de Amazonas",
+  "short_name": "El Mercado",
+  "description": "Frutas, verduras, carnes y abarrotes del mercado a tu puerta, el mismo día.",
+  "lang": "es-PE",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#146B3A",
+  "icons": [
+    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
