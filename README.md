@@ -27,7 +27,7 @@ No hay contenido en HTML estático: `index.html` y `admin.html` tienen 19 línea
 2. **Firestore**: menú *Compilación → Firestore Database → Crear base de datos* (modo producción, la región más cercana).
 3. **Authentication**: *Compilación → Authentication → Comenzar → Correo electrónico/contraseña → Habilitar*.
    Luego en la pestaña *Users → Agregar usuario* crea tu usuario administrador (correo y contraseña). Con ese usuario entras al panel.
-4. **Datos de la app**: *Configuración del proyecto (engranaje) → Tus apps → Agregar app → Web (</>)*. Copia el objeto `firebaseConfig` y pégalo en `js/firebase-config.js`.
+4. **Datos de la app**: ya están en `js/firebase-config.js` (proyecto `elmercadodeas`). Si algún día cambias de proyecto, copia el nuevo `firebaseConfig` desde *Configuración del proyecto → Tus apps → Web* y reemplázalo ahí.
 5. **Reglas**: en *Firestore Database → Reglas* pega el contenido de `firestore.rules` y publica.
    (O usa la CLI: `firebase deploy --only firestore:rules`).
 6. **Dominios autorizados** (solo si no usas Firebase Hosting): *Authentication → Settings → Dominios autorizados* → agrega el dominio donde subas la tienda.
