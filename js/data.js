@@ -1,14 +1,14 @@
 /* ============================================================
-   LEITIME · Catálogo y configuración por defecto
+   El Mercado de Amazonas · Catálogo de ejemplo
    ------------------------------------------------------------
-   Este archivo es la "fuente" de la tienda. El panel (admin.html)
-   guarda los cambios en el navegador y puede descargar una copia
-   nueva de este archivo para publicarla en el servidor.
+   Solo se usa para "Cargar catálogo de ejemplo" desde el panel
+   en un proyecto de Firebase vacío, y como textos de respaldo
+   mientras la tienda todavía no tiene configuración guardada.
+   Los datos reales viven en Firestore.
    ============================================================ */
-window.LEITIME_DEFAULT = {
-  version: 2,
+export const SEMILLA = {
   config: {
-    nombre: "LEITIME",
+    nombre: "El Mercado de Amazonas",
     lema: { es: "Tu mercado, a tu puerta.", en: "Your market, at your door." },
     whatsapp: "51999999999",
     moneda: "S/",
@@ -19,7 +19,7 @@ window.LEITIME_DEFAULT = {
     dias: [1, 2, 3, 4, 5],
     direccion: { es: "Puesto 24 · Mercado Central", en: "Stall 24 · Central Market" },
     pagos: "Yape · Plin · Efectivo",
-    pin: "1234"
+    apariencia: { primario: "#146B3A", acento: "#E2432B", resalte: "#FFC53D", fuenteTitulos: "Bricolage Grotesque", fuenteTexto: "DM Sans" }
   },
   categorias: [
     { id: "frutas",    es: "Frutas",    en: "Fruit" },
