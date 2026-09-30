@@ -1,7 +1,7 @@
 /* ============================================================
-   LEITIME · Textos en español e inglés
+   El Mercado de Amazonas · Textos en español e inglés
    ============================================================ */
-window.I18N = {
+export const I18N = {
   es: {
     /* navegación */
     nav_tienda: "Tienda", nav_como: "Cómo pedir", nav_yapa: "Yapa",
@@ -46,10 +46,32 @@ window.I18N = {
     dias: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
     dias_corto: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
 
+
+    /* ---------- estados de carga ---------- */
+    cargando: "Cargando la tienda…", error_datos: "No pudimos cargar la tienda. Revisa tu conexión e inténtalo de nuevo.",
+    setup_t: "Falta conectar Firebase", setup_p: "Esta tienda guarda sus datos en Firebase. Abre js/firebase-config.js, pega los datos de tu proyecto y vuelve a cargar la página. El archivo README.md explica cada paso.",
+    pedido_guardado: "Pedido registrado. Confírmalo en WhatsApp",
+    /* ---------- acceso al panel (Firebase Auth) ---------- */
+    p_login_p: "Inicia sesión con el usuario que creaste en Firebase Authentication.",
+    p_email: "Correo", p_clave: "Contraseña", p_entrando: "Entrando…",
+    p_login_err: "Correo o contraseña incorrectos", p_login_err_red: "Sin conexión. Inténtalo de nuevo.", p_login_err_muchos: "Demasiados intentos. Espera unos minutos.",
+    p_permiso: "No tienes permiso para guardar. Revisa las reglas de Firestore.", p_error: "Ocurrió un error al guardar",
+    /* ---------- pedidos ---------- */
+    p_tab_pedidos: "Pedidos", p_sin_pedidos: "Todavía no hay pedidos.", p_pedidos_hoy: "{n} pedidos hoy · {t} en ventas",
+    p_estado_nuevo: "Nuevo", p_estado_atendido: "Atendido", p_estado_entregado: "Entregado", p_estado_cancelado: "Cancelado",
+    p_pedido_de: "Pedido de {n}", p_borrar_pedido: "¿Borrar este pedido?", p_filtro_todos: "Todos",
+    /* ---------- apariencia ---------- */
+    p_apariencia: "Apariencia", p_apariencia_p: "Cambia el nombre, las letras y los colores. Se aplica al instante en la tienda.",
+    p_color_primario: "Color principal (cabecera, botones)", p_color_acento: "Color de acento (ofertas, yapa)", p_color_resalte: "Color de resalte (canasta, avisos)",
+    p_fuente_titulos: "Letra de títulos", p_fuente_texto: "Letra del texto", p_vista_previa: "Vista previa", p_restaurar_colores: "Volver a los colores originales",
+    /* ---------- datos ---------- */
+    p_tab_datos: "Datos", p_datos_t: "Datos en Firebase", p_datos_p: "Todo lo que cambias en el panel se guarda en Firebase y lo ven tus clientes al instante, en cualquier dispositivo.",
+    p_datos_estado: "{n} productos · {c} categorías · {p} pedidos", p_sembrar: "Cargar catálogo de ejemplo", p_sembrar_confirmar: "Esto escribirá el catálogo de ejemplo en Firebase (sobrescribe productos con el mismo id). ¿Continuar?",
+    p_sembrar_ok: "Catálogo de ejemplo cargado", p_exportar: "Descargar copia (JSON)", p_importar: "Importar copia (JSON)", p_importar_confirmar: "Se escribirán {n} productos y la configuración en Firebase. ¿Continuar?",
+    p_importado: "Copia importada", p_import_err: "El archivo no es una copia válida",
     /* ---------- panel ---------- */
     p_titulo: "Panel", p_ver_tienda: "Ver tienda", p_salir: "Salir",
-    p_login_t: "Acceso al panel", p_login_p: "Escribe el PIN para administrar productos, precios y datos de la tienda.",
-    p_pin: "PIN", p_entrar: "Entrar", p_pin_mal: "PIN incorrecto", p_pin_ayuda: "El PIN inicial es 1234. Cámbialo en la pestaña Tienda.",
+    p_login_t: "Acceso al panel", p_login_p: "Escribe el PIN para administrar productos, precios y datos de la tienda.", p_entrar: "Entrar",
     p_tab_productos: "Productos", p_tab_categorias: "Categorías", p_tab_tienda: "Tienda", p_tab_publicar: "Publicar",
     p_buscar: "Buscar producto…", p_nuevo: "Nuevo producto", p_todas: "Todas las categorías",
     p_col_prod: "Producto", p_col_cat: "Categoría", p_col_precio: "Precio", p_col_antes: "Antes", p_col_visible: "Visible", p_col_acciones: "Acciones",
@@ -69,7 +91,6 @@ window.I18N = {
     p_tienda_wa: "WhatsApp (con código de país, solo números)", p_tienda_moneda: "Símbolo de moneda", p_tienda_delivery: "Costo de delivery",
     p_tienda_yapa: "Monto mínimo para la yapa", p_tienda_direccion_es: "Dirección en español", p_tienda_direccion_en: "Dirección en inglés",
     p_tienda_pagos: "Medios de pago", p_tienda_horario: "Horario de atención", p_tienda_abre: "Abre", p_tienda_cierra: "Cierra", p_tienda_dias: "Días de atención",
-    p_tienda_seguridad: "Seguridad", p_tienda_pin: "Nuevo PIN (4 a 8 dígitos)", p_tienda_pin_ok: "PIN actualizado", p_tienda_pin_err: "El PIN debe tener entre 4 y 8 dígitos",
     p_pub_t: "Publicar cambios", p_pub_p: "Los cambios que haces aquí se guardan en este navegador y se ven al instante en la tienda de este mismo equipo. Para que los vean todos tus clientes, descarga el archivo y reemplaza js/data.js en tu hosting.",
     p_pub_descargar: "Descargar data.js", p_pub_exportar: "Exportar copia (JSON)", p_pub_importar: "Importar copia (JSON)",
     p_pub_reset: "Restablecer a valores de fábrica", p_pub_reset_confirmar: "¿Restablecer todo? Se perderán los cambios guardados en este navegador.",
@@ -111,9 +132,26 @@ window.I18N = {
     dias: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
     dias_corto: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
 
+
+    cargando: "Loading the shop…", error_datos: "We couldn’t load the shop. Check your connection and try again.",
+    setup_t: "Firebase is not connected yet", setup_p: "This shop keeps its data in Firebase. Open js/firebase-config.js, paste your project settings and reload the page. README.md explains each step.",
+    pedido_guardado: "Order saved. Confirm it on WhatsApp",
+    p_login_p: "Sign in with the user you created in Firebase Authentication.",
+    p_email: "Email", p_clave: "Password", p_entrando: "Signing in…",
+    p_login_err: "Wrong email or password", p_login_err_red: "No connection. Try again.", p_login_err_muchos: "Too many attempts. Wait a few minutes.",
+    p_permiso: "You don’t have permission to save. Check the Firestore rules.", p_error: "Something went wrong while saving",
+    p_tab_pedidos: "Orders", p_sin_pedidos: "No orders yet.", p_pedidos_hoy: "{n} orders today · {t} in sales",
+    p_estado_nuevo: "New", p_estado_atendido: "Handled", p_estado_entregado: "Delivered", p_estado_cancelado: "Cancelled",
+    p_pedido_de: "Order from {n}", p_borrar_pedido: "Delete this order?", p_filtro_todos: "All",
+    p_apariencia: "Appearance", p_apariencia_p: "Change the name, fonts and colors. Applies instantly in the shop.",
+    p_color_primario: "Primary color (header, buttons)", p_color_acento: "Accent color (deals, yapa)", p_color_resalte: "Highlight color (basket, toasts)",
+    p_fuente_titulos: "Heading font", p_fuente_texto: "Body font", p_vista_previa: "Preview", p_restaurar_colores: "Restore original colors",
+    p_tab_datos: "Data", p_datos_t: "Data in Firebase", p_datos_p: "Everything you change here is saved in Firebase and your customers see it instantly, on any device.",
+    p_datos_estado: "{n} products · {c} categories · {p} orders", p_sembrar: "Load sample catalog", p_sembrar_confirmar: "This writes the sample catalog to Firebase (overwrites products with the same id). Continue?",
+    p_sembrar_ok: "Sample catalog loaded", p_exportar: "Download backup (JSON)", p_importar: "Import backup (JSON)", p_importar_confirmar: "{n} products and the settings will be written to Firebase. Continue?",
+    p_importado: "Backup imported", p_import_err: "That file is not a valid backup",
     p_titulo: "Dashboard", p_ver_tienda: "View shop", p_salir: "Sign out",
-    p_login_t: "Dashboard access", p_login_p: "Enter the PIN to manage products, prices and shop details.",
-    p_pin: "PIN", p_entrar: "Sign in", p_pin_mal: "Wrong PIN", p_pin_ayuda: "The default PIN is 1234. Change it in the Shop tab.",
+    p_login_t: "Dashboard access", p_login_p: "Enter the PIN to manage products, prices and shop details.", p_entrar: "Sign in",
     p_tab_productos: "Products", p_tab_categorias: "Categories", p_tab_tienda: "Shop", p_tab_publicar: "Publish",
     p_buscar: "Search product…", p_nuevo: "New product", p_todas: "All categories",
     p_col_prod: "Product", p_col_cat: "Category", p_col_precio: "Price", p_col_antes: "Was", p_col_visible: "Visible", p_col_acciones: "Actions",
@@ -133,7 +171,6 @@ window.I18N = {
     p_tienda_wa: "WhatsApp (with country code, digits only)", p_tienda_moneda: "Currency symbol", p_tienda_delivery: "Delivery fee",
     p_tienda_yapa: "Minimum amount for the yapa", p_tienda_direccion_es: "Address in Spanish", p_tienda_direccion_en: "Address in English",
     p_tienda_pagos: "Payment methods", p_tienda_horario: "Opening hours", p_tienda_abre: "Opens", p_tienda_cierra: "Closes", p_tienda_dias: "Open days",
-    p_tienda_seguridad: "Security", p_tienda_pin: "New PIN (4 to 8 digits)", p_tienda_pin_ok: "PIN updated", p_tienda_pin_err: "PIN must be 4 to 8 digits",
     p_pub_t: "Publish changes", p_pub_p: "Changes made here are saved in this browser and show instantly in the shop on this same device. To make them visible to all your customers, download the file and replace js/data.js on your hosting.",
     p_pub_descargar: "Download data.js", p_pub_exportar: "Export backup (JSON)", p_pub_importar: "Import backup (JSON)",
     p_pub_reset: "Reset to factory defaults", p_pub_reset_confirmar: "Reset everything? Changes saved in this browser will be lost.",
@@ -143,10 +180,10 @@ window.I18N = {
 };
 
 /* t("clave", {var: valor}) → texto en el idioma activo */
-window.t = function (clave, vars) {
+export function t(clave, vars) {
   const idioma = document.documentElement.lang === "en" ? "en" : "es";
   let s = (I18N[idioma] && I18N[idioma][clave]) ?? I18N.es[clave] ?? clave;
   if (typeof s !== "string") return s;
   if (vars) for (const k in vars) s = s.replaceAll("{" + k + "}", vars[k]);
   return s;
-};
+}
