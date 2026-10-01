@@ -82,8 +82,8 @@ export async function reordenar(productos) {
 }
 export async function sembrar(semilla) {
   const b = writeBatch(db);
-  b.set(refConfig(), limpiar(semilla.config), { merge: true });
-  b.set(refCatalogo(), { categorias: semilla.categorias, unidades: semilla.unidades }, { merge: true });
+  if (semilla.config) b.set(refConfig(), limpiar(semilla.config), { merge: true });          // sin config → no toca la de la tienda
+  b.set(refCatalogo(), limpiar({ categorias: semilla.categorias, unidades: semilla.unidades }), { merge: true });
   semilla.productos.forEach((p, i) => { const { id, ...datos } = p; b.set(doc(db, "productos", id), { activo: true, ...limpiar(datos), orden: datos.orden ?? i }, { merge: true }); });
   await b.commit();
 }

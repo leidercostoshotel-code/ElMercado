@@ -80,7 +80,7 @@ Proyecto `elmercadodeas`, base de datos `(default)`. La tienda lee todo en tiemp
 
 Tres formas, de la más rápida a la más completa:
 
-1. **Panel → Datos → Cargar catálogo de ejemplo.** 24 productos con imagen, en ambos idiomas, para ver la tienda funcionando.
+1. **Panel → Datos → Cargar catálogo de ejemplo.** 43 productos, incluidos los 23 del volante "Verduras a domicilio" con sus precios. Solo agrega lo que falte: no toca tu nombre, WhatsApp, colores, fotos ni tus categorías propias. El mismo volante está en `scripts/verduras-a-domicilio.csv` para importarlo por CSV.
 2. **Panel → Productos → Importar productos.** Sube un CSV o pega filas con el formato `nombre, categoría, precio, unidad, oferta (sí/no), url de imagen, subcategoría (opcional)`. Hay una plantilla descargable con 3 filas. Muestra cuántos se importaron y qué filas fallaron y por qué. Si el nombre ya existe, actualiza ese producto.
 3. **Desde Cloud Shell**, sin abrir el panel:
    ```

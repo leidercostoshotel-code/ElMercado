@@ -543,7 +543,20 @@ function vistaDatos() {
     } catch (err) { fallo(err); }
     b.disabled = false; b.textContent = "🌐 " + t("p_traducir_faltantes");
   };
-  $("btnSembrar").onclick = () => { if (confirm(t("p_sembrar_confirmar"))) guardar(db.sembrar(SEMILLA), t("p_sembrar_ok")); };
+  /* Catálogo de ejemplo: agrega lo que falte sin pisar la configuración ni las categorías propias */
+  $("btnSembrar").onclick = () => {
+    if (!confirm(t("p_sembrar_confirmar"))) return;
+    const cats = clone(D.categorias);
+    SEMILLA.categorias.forEach(sc => {
+      const c = cats.find(x => x.id === sc.id);
+      if (!c) return cats.push(clone(sc));
+      c.sub = c.sub || [];
+      (sc.sub || []).forEach(s => { if (!c.sub.some(x => x.id === s.id)) c.sub.push(clone(s)); });
+    });
+    const unis = [...clone(D.unidades), ...clone(SEMILLA.unidades.filter(u => !D.unidades.some(x => x.id === u.id)))];
+    const configVacia = !D.config?.whatsapp || !Object.keys(D.config).length;
+    guardar(db.sembrar({ config: configVacia ? SEMILLA.config : null, categorias: cats, unidades: unis, productos: SEMILLA.productos }), t("p_sembrar_ok", { n: SEMILLA.productos.length }));
+  };
 }
 
 /* ---------- arranque ---------- */
