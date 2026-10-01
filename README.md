@@ -25,6 +25,7 @@ No hay contenido en HTML estático: toda la interfaz se construye desde JavaScri
 | `img/` | Ícono de la app, `apple-touch-icon` e imagen para compartir (`og-v2.jpg`). |
 | `img/productos/` | Fotos de producto recortadas del volante "Verduras a domicilio" (fondo transparente, WebP). Se usan automáticamente si el producto se llama igual y no tiene foto propia. |
 | `scripts/seed.mjs` | Carga el catálogo de ejemplo desde Cloud Shell. |
+| `scripts/empaquetar.sh` | Arma `dist/` solo con los archivos públicos; Firebase lo ejecuta antes de cada despliegue. |
 | `firebase.json` | Configuración de Firebase Hosting. |
 
 ## Puesta en marcha (una sola vez)
@@ -115,3 +116,9 @@ Después, los **precios se cambian en línea** en la tabla de Productos (escribe
 - 23 productos del volante traen foto propia en `img/productos/` (ají amarillo, rocoto, olluco, yuca, kion, maíz morado, papas, etc.).
 - Si creas un producto con el mismo nombre (por ejemplo "Ají amarillo" o "Papa amarilla") y no le subes foto, usa la incluida.
 - Los demás productos muestran su emoji hasta que les subas una foto real desde el panel (Productos → Editar → Subir imagen) o pegues una URL.
+
+## Publicar
+
+`firebase deploy` ejecuta primero `scripts/empaquetar.sh`, que copia a `dist/` solo `index.html`, `admin.html`, `404.html`, `manifest.json`, `sw.js`, `css/`, `js/` e `img/` (unos 42 archivos). Se publica `dist/`, así que cualquier otro archivo que haya en la carpeta (copias, registros, descargas) nunca se sube.
+
+Si la subida se corta con "An unexpected error has occurred", suele ser la conexión: vuelve a ejecutar el despliegue. Si se repite, revisa `firebase-debug.log`.
