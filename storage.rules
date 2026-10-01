@@ -8,6 +8,13 @@ service firebase.storage {
                    && request.resource.size < 2 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*');
     }
+    // Fotos de la portada (pasarela del hero), mismas condiciones.
+    match /portada/{archivo} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
     match /{resto=**} { allow read, write: if false; }
   }
 }

@@ -19,7 +19,18 @@ export const SEMILLA = {
     dias: [1, 2, 3, 4, 5],
     direccion: { es: "Puesto 24 · Mercado Central", en: "Stall 24 · Central Market" },
     pagos: "Yape · Plin · Efectivo",
-    apariencia: { primario: "#146B3A", acento: "#E2432B", resalte: "#FFC53D", fuenteTitulos: "Bricolage Grotesque", fuenteTexto: "DM Sans" }
+    apariencia: { primario: "#146B3A", acento: "#E2432B", resalte: "#FFC53D", fuenteTitulos: "Bricolage Grotesque", fuenteTexto: "DM Sans" },
+    /* Fotos de la portada (pasarela). Se cambian desde el panel → Tienda → Apariencia. */
+    portada: [
+      { url: "https://images.unsplash.com/photo-1546470427-e26264be0b0d", es: "Tomates frescos", en: "Fresh tomatoes" },
+      { url: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1", es: "Lechuga fresca", en: "Fresh lettuce" },
+      { url: "https://images.unsplash.com/photo-1518977676601-b53f82aba655", es: "Papas", en: "Potatoes" },
+      { url: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83", es: "Pimientos de colores", en: "Bell peppers" },
+      { url: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37", es: "Zanahorias", en: "Carrots" },
+      { url: "https://images.unsplash.com/photo-1610832958506-aa56368176cf", es: "Frutas frescas", en: "Fresh fruit" },
+      { url: "https://images.unsplash.com/photo-1540420773420-3366772f4999", es: "Verduras del mercado", en: "Market vegetables" },
+      { url: "https://images.unsplash.com/photo-1542838132-92c53300491e", es: "Puesto de frutas y verduras", en: "Produce stall" }
+    ]
   },
   categorias: [
     { id: "frutas",    es: "Frutas",    en: "Fruit" },

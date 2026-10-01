@@ -387,6 +387,11 @@ function vistaTienda() {
       <div class="campo"><label for="a_titulos">${t("p_fuente_titulos")}</label><select id="a_titulos">${opciones(FUENTES.titulos, ap.fuenteTitulos)}</select></div>
       <div class="campo"><label for="a_texto">${t("p_fuente_texto")}</label><select id="a_texto">${opciones(FUENTES.texto, ap.fuenteTexto)}</select></div>
     </div>
+    <h3>${t("p_portada")}</h3>
+    <p style="color:var(--tinta-2);margin-bottom:.6rem">${t("p_portada_p")}</p>
+    <label class="campo"><span>${t("p_portada_urls")}</span><textarea id="a_portada" rows="5" style="width:100%;padding:.7rem .8rem;border-radius:12px;border:2px solid var(--linea);background:var(--papel-2);font-family:ui-monospace,Menlo,monospace;font-size:.85rem">${esc((c.portada || []).map(f => f.url).join("\n"))}</textarea></label>
+    <div class="subir-img" style="margin-top:.5rem"><label class="btn btn-borde chico" for="a_portada_archivo">${ICON.nube} ${t("p_portada_subir")}</label><input type="file" id="a_portada_archivo" accept="image/*" class="sr"><small id="a_portada_estado"></small></div>
+    <div class="portada-lista" id="a_portada_lista"></div>
     <h3>${t("p_vista_previa")}</h3>
     <div class="preview" id="preview">
       <div class="p-top"><b id="pv_nombre">${esc(c.nombre)}</b><span>🧺 ${S(38.5)}</span></div>
@@ -403,7 +408,25 @@ function vistaTienda() {
   });
   $("a_titulos").onchange = $("a_texto").onchange = $("c_nombre").oninput = preview; preview();
   $("btnRestaurar").onclick = () => { Object.entries(APARIENCIA_BASE).forEach(([k, v]) => { const m = { primario: "a_primario", acento: "a_acento", resalte: "a_resalte", fuenteTitulos: "a_titulos", fuenteTexto: "a_texto" }[k]; $(m).value = v; if ($(m + "_hex")) $(m + "_hex").value = v; }); preview(); };
-  $("formAp").onsubmit = e => { e.preventDefault(); const apariencia = leerAp(); aplicarApariencia(apariencia); guardar(db.guardarConfig({ apariencia })); };
+  /* fotos de portada: miniaturas en vivo, quitar, subir */
+  const urlsPortada = () => $("a_portada").value.split("\n").map(x => x.trim()).filter(x => /^(https?:\/\/|\/)/.test(x));
+  const pintarPortada = () => { $("a_portada_lista").innerHTML = urlsPortada().map((u, i) => `<div class="portada-item"><img src="${esc(u)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('rota')"><button type="button" class="quitar" data-quitar="${i}" aria-label="${t("p_portada_quitar")}">✕</button></div>`).join(""); };
+  $("a_portada").oninput = pintarPortada; pintarPortada();
+  $("a_portada_lista").onclick = e => { const b = e.target.closest("[data-quitar]"); if (!b) return; const l = urlsPortada(); l.splice(+b.dataset.quitar, 1); $("a_portada").value = l.join("\n"); pintarPortada(); };
+  $("a_portada_archivo").onchange = async e => {
+    const a = e.target.files[0]; if (!a) return;
+    if (a.size > 2 * 1024 * 1024) return $("a_portada_estado").textContent = t("p_imagen_grande");
+    $("a_portada_estado").textContent = t("p_imagen_subiendo");
+    try { const u = await db.subirImagen(a, "portada-" + slug(a.name.replace(/\.[^.]+$/, ""))); $("a_portada").value = [...urlsPortada(), u].join("\n"); pintarPortada(); $("a_portada_estado").textContent = "✓"; }
+    catch (err) { console.error(err); $("a_portada_estado").textContent = t("p_imagen_err"); }
+  };
+  $("formAp").onsubmit = e => {
+    e.preventDefault();
+    const apariencia = leerAp(); aplicarApariencia(apariencia);
+    const previas = c.portada || [];
+    const portada = urlsPortada().map(u => previas.find(p => p.url === u) || { url: u, es: "", en: "" });
+    guardar(db.guardarConfig({ apariencia, portada }));
+  };
   $("formTienda").onsubmit = e => {
     e.preventDefault();
     guardar(db.guardarConfig({

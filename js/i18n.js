@@ -89,6 +89,8 @@ export const I18N = {
     p_importar_res: "{ok} importados · {err} con error", p_importar_fila: "Fila {n}: {m}", p_err_cat: "categoría desconocida “{c}”", p_err_uni: "unidad desconocida “{u}”", p_err_precio_fila: "precio inválido", p_err_columnas: "faltan columnas",
     p_imagen_subir: "Subir imagen", p_imagen_subiendo: "Subiendo…", p_imagen_err: "No se pudo subir la imagen", p_imagen_grande: "La imagen pesa más de 2 MB",
     p_login_ayuda: "El usuario se crea en Firebase → Authentication → Users.",
+    p_portada: "Fotos de la portada", p_portada_p: "Pasan en fundido una tras otra en la parte superior de la tienda. Usa fotos horizontales y nítidas (mínimo 1200 px de ancho). Pega una URL por línea o sube tus propias fotos.",
+    p_portada_urls: "URLs de las fotos (una por línea)", p_portada_subir: "Subir foto", p_portada_quitar: "Quitar foto",
     /* ---------- panel ---------- */
     p_titulo: "Panel", p_ver_tienda: "Ver tienda", p_salir: "Salir",
     p_login_t: "Acceso al panel", p_entrar: "Entrar",
@@ -183,6 +185,8 @@ export const I18N = {
     p_importar_res: "{ok} imported · {err} failed", p_importar_fila: "Row {n}: {m}", p_err_cat: "unknown category “{c}”", p_err_uni: "unknown unit “{u}”", p_err_precio_fila: "invalid price", p_err_columnas: "missing columns",
     p_imagen_subir: "Upload image", p_imagen_subiendo: "Uploading…", p_imagen_err: "The image could not be uploaded", p_imagen_grande: "The image is larger than 2 MB",
     p_login_ayuda: "Users are created in Firebase → Authentication → Users.",
+    p_portada: "Cover photos", p_portada_p: "They crossfade one after another at the top of the shop. Use sharp landscape photos (at least 1200 px wide). Paste one URL per line or upload your own.",
+    p_portada_urls: "Photo URLs (one per line)", p_portada_subir: "Upload photo", p_portada_quitar: "Remove photo",
     p_titulo: "Dashboard", p_ver_tienda: "View shop", p_salir: "Sign out",
     p_login_t: "Dashboard access", p_entrar: "Sign in",
     p_tab_productos: "Products", p_tab_categorias: "Categories", p_tab_tienda: "Shop", p_tab_publicar: "Publish",
