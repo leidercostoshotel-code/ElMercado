@@ -65,12 +65,14 @@ Proyecto `elmercadodeas`, base de datos `(default)`. La tienda lee todo en tiemp
 | Ruta | Campos | Quién escribe |
 | --- | --- | --- |
 | `tienda/config` | `nombre`, `lema{es,en}`, `whatsapp` (solo dígitos con código de país), `moneda`, `delivery`, `metaYapa`, `horaAbre`, `horaCierra`, `horaLimite` (hora límite de pedidos, opcional; si falta se usa `horaCierra`), `dias[]` (0 = domingo … 6 = sábado), `direccion{es,en}`, `pagos`, `apariencia{primario, acento, resalte, fuenteTitulos, fuenteTexto}` | Panel → Tienda |
-| `tienda/catalogo` | `categorias[{id, es, en}]`, `unidades[{id, es, en}]` | Panel → Categorías |
-| `productos/{id}` | `es`, `en`, `cat` (id de categoría), `unidad` (id de unidad), `precio`, `antes` (precio anterior, `null` si no hay oferta), `oferta` (bool, marca "Ofertas de hoy" aunque no tenga precio anterior), `icono` (emoji de respaldo), `imagen` (URL o archivo en Storage), `activo` (bool; solo los activos se muestran), `orden` (número) | Panel → Productos / Importar |
+| `tienda/catalogo` | `categorias[{id, es, en, sub[{id, es, en}]}]` (subcategorías opcionales), `unidades[{id, es, en, paso}]` (`paso` = cuánto suma cada +/−: 0.25 kg, 100 g, 1 unidad) | Panel → Categorías |
+| `productos/{id}` | `es`, `en`, `cat` (id de categoría), `sub` (id de subcategoría o `null`), `unidad` (id de unidad), `precio`, `antes` (precio anterior, `null` si no hay oferta), `oferta` (bool, marca "Ofertas de hoy" aunque no tenga precio anterior), `icono` (emoji de respaldo), `imagen` (URL o archivo en Storage), `activo` (bool; solo los activos se muestran), `orden` (número) | Panel → Productos / Importar |
 | `pedidos/{id}` | `nombre`, `modo` (`delivery` / `recojo`), `direccion`, `items[{id, nombre, n, unidad, precio}]`, `subtotal`, `delivery`, `total`, `yapa`, `moneda`, `idioma`, `estado` (`nuevo` / `atendido` / `entregado` / `cancelado`), `creado` (timestamp) | La tienda crea; el panel gestiona |
 
 - El `id` de producto es el nombre en español en minúsculas y sin tildes (`palta-fuerte`). Si ya existe, se agrega `-2`, `-3`…
-- Orden público: por categoría (según el orden de la pestaña Categorías) y dentro de cada una por `orden`.
+- Orden público: por categoría (según el orden de la pestaña Categorías), luego subcategoría y luego `orden`.
+- Unidades incluidas: kg, medio kilo, g, libra, arroba, saco, litro, ml, galón, botella, unidad, docena, media docena, atado, racimo, paquete, bolsa, malla, caja, bandeja, lata, frasco, sobre y porción. En un catálogo ya cargado se suman con **Categorías → Agregar unidades comunes**.
+- Los nombres en inglés se completan solos al escribir en español (diccionario local de mercado + servicio MyMemory). **Datos → Traducir al inglés lo que falta** completa los existentes.
 - `visible` es el nombre antiguo de `activo`; la tienda acepta ambos y el panel escribe los dos.
 - Las imágenes subidas desde el panel van a Storage en `productos/{id}-{timestamp}.{ext}` (máx. 2 MB, `storage.rules`).
 
@@ -79,7 +81,7 @@ Proyecto `elmercadodeas`, base de datos `(default)`. La tienda lee todo en tiemp
 Tres formas, de la más rápida a la más completa:
 
 1. **Panel → Datos → Cargar catálogo de ejemplo.** 24 productos con imagen, en ambos idiomas, para ver la tienda funcionando.
-2. **Panel → Productos → Importar productos.** Sube un CSV o pega filas con el formato `nombre, categoría, precio, unidad, oferta (sí/no), url de imagen`. Hay una plantilla descargable con 3 filas. Muestra cuántos se importaron y qué filas fallaron y por qué. Si el nombre ya existe, actualiza ese producto.
+2. **Panel → Productos → Importar productos.** Sube un CSV o pega filas con el formato `nombre, categoría, precio, unidad, oferta (sí/no), url de imagen, subcategoría (opcional)`. Hay una plantilla descargable con 3 filas. Muestra cuántos se importaron y qué filas fallaron y por qué. Si el nombre ya existe, actualiza ese producto.
 3. **Desde Cloud Shell**, sin abrir el panel:
    ```
    cd ElMercado && node scripts/seed.mjs

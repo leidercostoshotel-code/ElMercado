@@ -461,3 +461,24 @@ footer .fin a:hover { color: #fff; }
 .portada-item img { width: 100%; height: 100%; object-fit: cover; }
 .portada-item .quitar { position: absolute; top: .3rem; right: .3rem; width: 2rem; height: 2rem; border-radius: 50%; background: rgba(0, 0, 0, .6); color: #fff; display: grid; place-items: center; }
 .portada-item.rota::before { content: "⚠️"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.6rem; }
+
+/* ---------- panel: traducción automática ---------- */
+input.auto-traducido { border-color: color-mix(in srgb, var(--palta) 60%, var(--linea)) !important; background-image: linear-gradient(90deg, color-mix(in srgb, var(--palta) 10%, transparent), transparent 60%); }
+input.traduciendo { background-image: linear-gradient(100deg, var(--papel) 40%, var(--papel-2) 50%, var(--papel) 60%) !important; background-size: 200% 100% !important; animation: brillo 1.2s infinite; }
+
+/* ---------- subcategorías ---------- */
+.cats.subs { flex-basis: 100%; }
+.cats.subs[hidden] { display: none; }
+.cat.sub { min-height: 2.75rem; font-size: .88rem; padding: .4rem .85rem; background: transparent; }
+.cat.sub[aria-pressed="true"] { background: var(--mango); border-color: var(--mango); color: #13201A; }
+.cat.sub[aria-pressed="true"] .num { background: rgba(0, 0, 0, .12); color: #13201A; }
+.sub-pill { display: block; color: var(--tinta-2); font-size: .78rem; margin-top: .2rem; }
+.lista .item .subcats { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; padding: .4rem 0 .2rem; border-top: 1px dashed var(--linea); }
+.subcats-titulo { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-2); margin-right: .2rem; }
+.subcat { display: inline-flex; align-items: center; gap: .3rem; background: var(--papel); border: 2px solid var(--linea); border-radius: 12px; padding: .2rem .3rem; }
+.lista .item .subcat input { width: 8.5rem; padding: .35rem .5rem; font-size: .88rem; }
+.subcat .mini { width: 2rem; height: 2rem; }
+.subcat.nueva-sub { border-style: dashed; }
+@media (max-width: 768px) { .lista .item .subcat input { width: 100%; } .subcat { flex-wrap: wrap; width: 100%; } }
+.paso-uni { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 700; color: var(--tinta-2); }
+.lista .item .paso-uni input { width: 4.6rem; padding: .35rem .45rem; }

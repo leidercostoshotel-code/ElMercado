@@ -61,10 +61,12 @@ export function suscribirTienda(cb) {
   return () => { u1(); u2(); u3(); };
 }
 
-/* Orden público: primero por categoría (según el orden del catálogo), luego por `orden` */
+/* Orden público: por categoría (orden del catálogo), luego subcategoría (orden dentro de la categoría), luego `orden` */
 export function ordenarProductos(productos, categorias) {
   const pos = new Map((categorias || []).map((c, i) => [c.id, i]));
-  return productos.slice().sort((a, b) => ((pos.get(a.cat) ?? 999) - (pos.get(b.cat) ?? 999)) || ((a.orden ?? 0) - (b.orden ?? 0)) || String(a.es || "").localeCompare(String(b.es || "")));
+  const posSub = new Map((categorias || []).flatMap(c => (c.sub || []).map((s, i) => [c.id + "/" + s.id, i])));
+  const ps = p => p.sub ? (posSub.get(p.cat + "/" + p.sub) ?? 998) : 999;   // sin subcategoría al final de su categoría
+  return productos.slice().sort((a, b) => ((pos.get(a.cat) ?? 999) - (pos.get(b.cat) ?? 999)) || (ps(a) - ps(b)) || ((a.orden ?? 0) - (b.orden ?? 0)) || String(a.es || "").localeCompare(String(b.es || "")));
 }
 export const esActivo = p => p.activo !== false && p.visible !== false;
 
