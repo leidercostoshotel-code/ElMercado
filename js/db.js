@@ -9,7 +9,7 @@
    ============================================================ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  initializeFirestore, persistentLocalCache, doc, collection, onSnapshot, setDoc, deleteDoc, addDoc,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, onSnapshot, setDoc, deleteDoc, addDoc,
   query, orderBy, limit, serverTimestamp, writeBatch, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -20,7 +20,7 @@ export const configurado = !!(firebaseConfig.apiKey && firebaseConfig.projectId)
 let db, auth, storage;
 if (configurado) {
   const app = initializeApp(firebaseConfig);
-  db = initializeFirestore(app, { localCache: persistentLocalCache() });
+  db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
   auth = getAuth(app);
   storage = getStorage(app);
 }

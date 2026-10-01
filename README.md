@@ -23,6 +23,7 @@ No hay contenido en HTML estático: toda la interfaz se construye desde JavaScri
 | `sw.js`, `manifest.json` | App instalable (PWA): caché del shell y modo standalone. |
 | `404.html` | Página de error con el mismo estilo. |
 | `img/` | Ícono de la app, `apple-touch-icon` e imagen para compartir (`og.png`). |
+| `img/productos/` | Fotos de producto recortadas del volante "Verduras a domicilio" (fondo transparente, WebP). Se usan automáticamente si el producto se llama igual y no tiene foto propia. |
 | `scripts/seed.mjs` | Carga el catálogo de ejemplo desde Cloud Shell. |
 | `firebase.json` | Configuración de Firebase Hosting. |
 
@@ -107,3 +108,9 @@ Después, los **precios se cambian en línea** en la tabla de Productos (escribe
 
 - `manifest.json` + `sw.js`: instalable en el teléfono; el shell se sirve desde caché y los datos de Firebase siempre van por red. Aparece un banner "Instalar app" cuando el navegador lo permite; se puede cerrar y no vuelve a molestar.
 - Open Graph y Twitter Card en `index.html` con `img/og.png` (1200×630), para que el enlace se vea bien en WhatsApp y redes.
+
+## Fotos de producto
+
+- 23 productos del volante traen foto propia en `img/productos/` (ají amarillo, rocoto, olluco, yuca, kion, maíz morado, papas, etc.).
+- Si creas un producto con el mismo nombre (por ejemplo "Ají amarillo" o "Papa amarilla") y no le subes foto, usa la incluida.
+- Los demás productos muestran su emoji hasta que les subas una foto real desde el panel (Productos → Editar → Subir imagen) o pegues una URL.
