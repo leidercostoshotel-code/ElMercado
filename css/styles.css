@@ -176,7 +176,7 @@ section { padding: 3rem 0; }
 .prod small { color: var(--tinta-2); }
 .prod .precio { font-family: var(--fuente-titulos), "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.35rem; margin-top: auto; padding-top: .4rem; }
 .prod .precio s { color: var(--tinta-2); font-weight: 400; font-size: .9rem; margin-left: .3rem; }
-.oferta { position: absolute; top: .7rem; right: .7rem; background: var(--tomate-osc); color: #fff; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; transform: rotate(6deg); }
+.oferta { position: absolute; z-index: 2; top: .7rem; right: .7rem; background: var(--tomate-osc); color: #fff; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; transform: rotate(6deg); }
 .add { margin-top: .5rem; background: var(--verde); color: #fff; border-radius: 999px; min-height: 2.75rem; padding: .55rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: .4rem; transition: background .15s; }
 .add:hover { background: var(--verde-osc); }
 .stepper { margin-top: .5rem; display: flex; align-items: center; justify-content: space-between; background: var(--verde); color: #fff; border-radius: 999px; padding: .15rem; }
