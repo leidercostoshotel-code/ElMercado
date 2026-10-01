@@ -22,7 +22,7 @@ No hay contenido en HTML estático: toda la interfaz se construye desde JavaScri
 | `storage.rules` | Reglas de Storage para las imágenes de producto. |
 | `sw.js`, `manifest.json` | App instalable (PWA): caché del shell y modo standalone. |
 | `404.html` | Página de error con el mismo estilo. |
-| `img/` | Ícono de la app, `apple-touch-icon` e imagen para compartir (`og.png`). |
+| `img/` | Ícono de la app, `apple-touch-icon` e imagen para compartir (`og-v2.jpg`). |
 | `img/productos/` | Fotos de producto recortadas del volante "Verduras a domicilio" (fondo transparente, WebP). Se usan automáticamente si el producto se llama igual y no tiene foto propia. |
 | `scripts/seed.mjs` | Carga el catálogo de ejemplo desde Cloud Shell. |
 | `firebase.json` | Configuración de Firebase Hosting. |
@@ -107,7 +107,8 @@ Después, los **precios se cambian en línea** en la tabla de Productos (escribe
 ## PWA y compartir
 
 - `manifest.json` + `sw.js`: instalable en el teléfono; el shell se sirve desde caché y los datos de Firebase siempre van por red. Aparece un banner "Instalar app" cuando el navegador lo permite; se puede cerrar y no vuelve a molestar.
-- Open Graph y Twitter Card en `index.html` con `img/og.png` (1200×630), para que el enlace se vea bien en WhatsApp y redes.
+- Open Graph y Twitter Card en `index.html` con `img/og-v2.jpg` (1200×630, menos de 300 KB, que es lo que WhatsApp necesita para la vista grande). El nombre lleva versión: si cambias la imagen, súbela como `og-v3.jpg` y actualiza las etiquetas, así WhatsApp y Facebook no siguen mostrando la anterior.
+- Para refrescar una vista previa ya compartida: en Facebook usa el [Depurador de contenido compartido](https://developers.facebook.com/tools/debug/) → "Volver a extraer"; WhatsApp guarda la vista previa por enlace, así que comparte `https://elmercadodeas.web.app/?v=2` para forzar una nueva.
 
 ## Fotos de producto
 
