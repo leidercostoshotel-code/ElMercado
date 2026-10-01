@@ -24,6 +24,14 @@ export const hora = h => { const n = Number(h), s = n % 12 || 12, en = document.
 export const nombre = (obj, lang) => (obj ? (obj[lang] || obj.es || obj.en || "") : "");
 export const slug = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
 export const clone = o => JSON.parse(JSON.stringify(o));
+/* Foto del producto: la subida por el administrador, o la incluida si el id o el nombre coinciden */
+export function imagenProducto(p, imagenes = {}) {
+  if (p?.imagen) return p.imagen;
+  const porNombre = slug(p?.es || "");
+  const alias = { "aji-amarillo": "aji", "papa-amarilla": "papa", "cebolla-roja": "cebolla", "maracuya": "maracuya", "ajo": "ajos", "jengibre": "kion", "kion": "kion",
+    "camote-amarillo": "camote", "pimiento": "pimenton", "arveja": "alverjita", "arvejita": "alverjita", "alverja": "alverjita", "vainitas": "vainita", "haba": "habas", "zapallo-macre": "zapallo" };
+  return imagenes[p?.id] || imagenes[porNombre] || imagenes[alias[porNombre]] || "";
+}
 export const fecha = d => new Intl.DateTimeFormat(document.documentElement.lang === "en" ? "en-US" : "es-PE", { dateStyle: "medium", timeStyle: "short" }).format(d);
 
 /* Favicon generado desde JS para no tocar el HTML */

@@ -9,7 +9,7 @@
    ============================================================ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  initializeFirestore, persistentLocalCache, doc, collection, onSnapshot, setDoc, deleteDoc, addDoc,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, onSnapshot, setDoc, deleteDoc, addDoc,
   query, orderBy, limit, serverTimestamp, writeBatch, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -20,7 +20,7 @@ export const configurado = !!(firebaseConfig.apiKey && firebaseConfig.projectId)
 let db, auth, storage;
 if (configurado) {
   const app = initializeApp(firebaseConfig);
-  db = initializeFirestore(app, { localCache: persistentLocalCache() });
+  db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
   auth = getAuth(app);
   storage = getStorage(app);
 }
@@ -82,8 +82,8 @@ export async function reordenar(productos) {
 }
 export async function sembrar(semilla) {
   const b = writeBatch(db);
-  b.set(refConfig(), limpiar(semilla.config), { merge: true });
-  b.set(refCatalogo(), { categorias: semilla.categorias, unidades: semilla.unidades }, { merge: true });
+  if (semilla.config) b.set(refConfig(), limpiar(semilla.config), { merge: true });          // sin config → no toca la de la tienda
+  b.set(refCatalogo(), limpiar({ categorias: semilla.categorias, unidades: semilla.unidades }), { merge: true });
   semilla.productos.forEach((p, i) => { const { id, ...datos } = p; b.set(doc(db, "productos", id), { activo: true, ...limpiar(datos), orden: datos.orden ?? i }, { merge: true }); });
   await b.commit();
 }

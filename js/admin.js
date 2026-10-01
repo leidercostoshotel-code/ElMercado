@@ -4,8 +4,8 @@
    apariencia y datos. Todo se guarda en Firebase (db.js).
    ============================================================ */
 import { t } from "./i18n.js";
-import { SEMILLA } from "./data.js";
-import { esc, dinero, nombre, tema, idioma, slug, clone, fecha, favicon, ICON, FUENTES, APARIENCIA_BASE, aplicarApariencia, cargarFuentes } from "./store.js";
+import { SEMILLA, IMAGENES } from "./data.js";
+import { esc, dinero, nombre, tema, idioma, slug, clone, fecha, favicon, ICON, FUENTES, APARIENCIA_BASE, aplicarApariencia, cargarFuentes, imagenProducto } from "./store.js";
 import * as db from "./db.js";
 import { enlazarTraduccion, traducirVarios } from "./traducir.js";
 const activo = p => p.activo !== false && p.visible !== false;
@@ -166,7 +166,7 @@ function filas() {
   const lista = P.map((p, i) => ({ p, i })).filter(({ p }) => (!fcat || p.cat === fcat) && (!fq || nombre(p, "es").toLowerCase().includes(fq) || nombre(p, "en").toLowerCase().includes(fq)));
   $("filas").innerHTML = lista.length ? lista.map(({ p, i }) => `
     <tr class="${activo(p) ? "" : "invisible"}">
-      <td class="celda-prod"><div class="prod-celda"><span class="icono">${p.imagen ? `<img src="${esc(p.imagen)}" alt="" loading="lazy" width="35" height="35" onerror="this.parentElement.classList.add('fallo');this.remove()">` : ""}<span class="emoji">${esc(p.icono || "🛒")}</span></span><div><b>${esc(p.es)}</b><small>${esc(p.en || "")} · ${esc(nombre(D.unidades.find(u => u.id === p.unidad), L) || p.unidad)}</small></div></div></td>
+      <td class="celda-prod"><div class="prod-celda"><span class="icono">${imagenProducto(p, IMAGENES) ? `<img src="${esc(imagenProducto(p, IMAGENES))}" alt="" loading="lazy" width="44" height="33" onerror="this.parentElement.classList.add('fallo');this.remove()">` : ""}<span class="emoji">${esc(p.icono || "🛒")}</span></span><div><b>${esc(p.es)}</b><small>${esc(p.en || "")} · ${esc(nombre(D.unidades.find(u => u.id === p.unidad), L) || p.unidad)}</small></div></div></td>
       <td><span class="pill">${esc(nombre(D.categorias.find(c => c.id === p.cat), L) || p.cat)}</span>${p.sub ? `<small class="sub-pill">${esc(nombre((D.categorias.find(c => c.id === p.cat)?.sub || []).find(s => s.id === p.sub), L) || p.sub)}</small>` : ""}</td>
       <td class="num"><span class="precio-inline"><input type="number" step="0.01" min="0.01" inputmode="decimal" value="${p.precio}" data-precio="${esc(p.id)}" aria-label="${t("p_precio_inline")}: ${esc(p.es)}"><button type="button" class="mini" data-ok-precio="${esc(p.id)}" title="${t("p_guardar")}" hidden>✓</button></span>${p.antes > p.precio ? ` <s>${S(p.antes)}</s>` : ""}</td>
       <td><label class="switch"><input type="checkbox" data-vis="${esc(p.id)}" ${activo(p) ? "checked" : ""} aria-label="${t("p_col_activo")}: ${esc(p.es)}"><i></i></label></td>
@@ -228,8 +228,8 @@ function formulario(i) {
     <div class="acciones-form"><button type="button" class="btn btn-borde" id="f_cancelar">${t("p_cancelar")}</button><button class="btn btn-verde">${t("p_guardar")}</button></div>
   </form>`;
   document.body.appendChild(velo);
-  const muestra = () => { const img = $("f_imagen").value.trim(); $("f_muestra").innerHTML = img ? `<img src="${esc(img)}" alt="">` : esc($("f_icono").value || "🛒"); };
-  $("f_icono").oninput = $("f_imagen").oninput = muestra; muestra();
+  const muestra = () => { const img = $("f_imagen").value.trim() || imagenProducto({ id: p.id, es: $("f_es").value }, IMAGENES); $("f_muestra").innerHTML = img ? `<img src="${esc(img)}" alt="">` : esc($("f_icono").value || "🛒"); };
+  $("f_icono").oninput = $("f_imagen").oninput = $("f_es").oninput = muestra; muestra();
   $("f_archivo").onchange = async e => {
     const a = e.target.files[0]; if (!a) return;
     if (a.size > 2 * 1024 * 1024) return $("f_subida").textContent = t("p_imagen_grande");
@@ -543,7 +543,20 @@ function vistaDatos() {
     } catch (err) { fallo(err); }
     b.disabled = false; b.textContent = "🌐 " + t("p_traducir_faltantes");
   };
-  $("btnSembrar").onclick = () => { if (confirm(t("p_sembrar_confirmar"))) guardar(db.sembrar(SEMILLA), t("p_sembrar_ok")); };
+  /* Catálogo de ejemplo: agrega lo que falte sin pisar la configuración ni las categorías propias */
+  $("btnSembrar").onclick = () => {
+    if (!confirm(t("p_sembrar_confirmar"))) return;
+    const cats = clone(D.categorias);
+    SEMILLA.categorias.forEach(sc => {
+      const c = cats.find(x => x.id === sc.id);
+      if (!c) return cats.push(clone(sc));
+      c.sub = c.sub || [];
+      (sc.sub || []).forEach(s => { if (!c.sub.some(x => x.id === s.id)) c.sub.push(clone(s)); });
+    });
+    const unis = [...clone(D.unidades), ...clone(SEMILLA.unidades.filter(u => !D.unidades.some(x => x.id === u.id)))];
+    const configVacia = !D.config?.whatsapp || !Object.keys(D.config).length;
+    guardar(db.sembrar({ config: configVacia ? SEMILLA.config : null, categorias: cats, unidades: unis, productos: SEMILLA.productos }), t("p_sembrar_ok", { n: SEMILLA.productos.length }));
+  };
 }
 
 /* ---------- arranque ---------- */

@@ -133,7 +133,9 @@ svg { display: block; }
 @media (max-width: 768px) { .hero .wrap { grid-template-columns: 1fr; } .canasta { height: 220px; } }
 @media (max-width: 768px) {
   .hero.con-fotos { min-height: 0; padding: 3rem 0 5rem; }
-  .velo-hero { background: linear-gradient(180deg, color-mix(in srgb, var(--verde-osc) 70%, transparent) 0%, color-mix(in srgb, var(--verde-osc) 82%, transparent) 45%, color-mix(in srgb, var(--verde-osc) 92%, transparent) 100%); }
+  .velo-hero { background: linear-gradient(180deg, color-mix(in srgb, var(--verde-osc) 30%, transparent) 0%, color-mix(in srgb, var(--verde-osc) 55%, transparent) 40%, color-mix(in srgb, var(--verde-osc) 78%, transparent) 100%); }
+  .hero.con-fotos h1 { text-shadow: 0 3px 18px rgba(0, 0, 0, .6), 0 1px 4px rgba(0, 0, 0, .5); }
+  .hero.con-fotos p { text-shadow: 0 1px 10px rgba(0, 0, 0, .7), 0 1px 3px rgba(0, 0, 0, .6); }
   .pasarela .respaldo { display: none; }
 }
 
@@ -161,14 +163,15 @@ section { padding: 3rem 0; }
 @media (max-width: 480px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; } .prod { padding: .8rem; } }
 .prod { background: var(--papel); border-radius: var(--radio); padding: 1rem; display: flex; flex-direction: column; gap: .3rem; position: relative; border: 2px solid transparent; transition: border-color .15s, transform .15s; }
 .prod:hover { transform: translateY(-3px); border-color: var(--palta); }
-.prod .icono { position: relative; font-size: 3.2rem; line-height: 1; margin-bottom: .4rem; display: block; transition: transform .3s; height: 4.25rem; width: 4.25rem; }
-.prod .icono img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; background: var(--papel-2); display: block; opacity: 0; transition: opacity .3s; }
+.prod .icono { position: relative; font-size: 3.2rem; line-height: 1; margin: -.2rem 0 .3rem; display: grid; place-items: center start; transition: transform .3s; width: 100%; aspect-ratio: 4 / 3; max-height: 8.5rem; }
+.prod .icono .emoji { font-size: 3.4rem; }
+.prod .icono img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; transition: opacity .3s; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .12)); }
 .prod .icono.ok img { opacity: 1; }
 .prod .icono:has(img) { background: linear-gradient(100deg, var(--papel-2) 40%, var(--papel) 50%, var(--papel-2) 60%); background-size: 200% 100%; animation: brillo 1.4s infinite; border-radius: 14px; }
 .prod .icono.ok, .prod .icono.fallo { animation: none; background: none; }
 .prod .icono:has(img) .emoji { display: none; }
 .prod .icono.fallo .emoji { display: block; }
-.prod:hover .icono { transform: rotate(-6deg) scale(1.08); }
+.prod:hover .icono { transform: scale(1.05); }
 .prod h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0; }
 .prod small { color: var(--tinta-2); }
 .prod .precio { font-family: var(--fuente-titulos), "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.35rem; margin-top: auto; padding-top: .4rem; }
@@ -285,7 +288,7 @@ footer .fin a:hover { color: #fff; }
 .tabla tr.invisible td { opacity: .55; }
 .tabla .prod-celda { display: flex; align-items: center; gap: .8rem; }
 .tabla .prod-celda .icono { font-size: 1.8rem; line-height: 1; width: 2.2rem; text-align: center; }
-.tabla .prod-celda .icono img { width: 2.2rem; height: 2.2rem; object-fit: cover; border-radius: 8px; }
+.tabla .prod-celda .icono img { width: 2.75rem; height: 2.1rem; object-fit: contain; }
 .tabla .prod-celda .icono:has(img) .emoji { display: none; }
 .tabla .prod-celda .icono.fallo .emoji { display: inline; }
 .tabla .prod-celda b { display: block; }
@@ -362,7 +365,7 @@ footer .fin a:hover { color: #fff; }
 @keyframes gira { to { transform: rotate(360deg); } }
 .prod.skeleton { min-height: 230px; border-color: transparent; pointer-events: none; }
 .prod.skeleton > * { background: var(--papel-2); border-radius: 8px; display: block; animation: brillo 1.4s infinite; background: linear-gradient(100deg, var(--papel-2) 40%, var(--papel) 50%, var(--papel-2) 60%); background-size: 200% 100%; }
-.prod.skeleton .icono { width: 4.25rem; height: 4.25rem; border-radius: 14px; }
+.prod.skeleton .icono { width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: 14px; }
 .prod.skeleton b { height: 1rem; width: 80%; margin-top: .4rem; }
 .prod.skeleton small { height: .8rem; width: 45%; }
 .prod.skeleton .precio { height: 1.4rem; width: 55%; margin-top: .6rem; }

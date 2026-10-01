@@ -66,8 +66,8 @@ export const I18N = {
     p_fuente_titulos: "Letra de títulos", p_fuente_texto: "Letra del texto", p_vista_previa: "Vista previa", p_restaurar_colores: "Volver a los colores originales",
     /* ---------- datos ---------- */
     p_tab_datos: "Datos", p_datos_t: "Datos en Firebase", p_datos_p: "Todo lo que cambias en el panel se guarda en Firebase y lo ven tus clientes al instante, en cualquier dispositivo.",
-    p_datos_estado: "{n} productos · {c} categorías · {p} pedidos", p_sembrar: "Cargar catálogo de ejemplo", p_sembrar_confirmar: "Esto escribirá el catálogo de ejemplo en Firebase (sobrescribe productos con el mismo id). ¿Continuar?",
-    p_sembrar_ok: "Catálogo de ejemplo cargado", p_exportar: "Descargar copia (JSON)", p_importar: "Importar copia (JSON)", p_importar_confirmar: "Se escribirán {n} productos y la configuración en Firebase. ¿Continuar?",
+    p_datos_estado: "{n} productos · {c} categorías · {p} pedidos", p_sembrar: "Cargar catálogo de ejemplo", p_sembrar_confirmar: "Se agregarán los productos de ejemplo (incluye el volante Verduras a domicilio) y las categorías, subcategorías y unidades que falten. Los productos de ejemplo que ya existan toman los precios del ejemplo. Tu nombre, WhatsApp, colores y fotos no se tocan. ¿Continuar?",
+    p_sembrar_ok: "Catálogo de ejemplo cargado: {n} productos", p_exportar: "Descargar copia (JSON)", p_importar: "Importar copia (JSON)", p_importar_confirmar: "Se escribirán {n} productos y la configuración en Firebase. ¿Continuar?",
     p_importado: "Copia importada", p_import_err: "El archivo no es una copia válida",
 
     /* ---------- estados del grid y flujo ---------- */
@@ -169,8 +169,8 @@ export const I18N = {
     p_color_primario: "Primary color (header, buttons)", p_color_acento: "Accent color (deals, yapa)", p_color_resalte: "Highlight color (basket, toasts)",
     p_fuente_titulos: "Heading font", p_fuente_texto: "Body font", p_vista_previa: "Preview", p_restaurar_colores: "Restore original colors",
     p_tab_datos: "Data", p_datos_t: "Data in Firebase", p_datos_p: "Everything you change here is saved in Firebase and your customers see it instantly, on any device.",
-    p_datos_estado: "{n} products · {c} categories · {p} orders", p_sembrar: "Load sample catalog", p_sembrar_confirmar: "This writes the sample catalog to Firebase (overwrites products with the same id). Continue?",
-    p_sembrar_ok: "Sample catalog loaded", p_exportar: "Download backup (JSON)", p_importar: "Import backup (JSON)", p_importar_confirmar: "{n} products and the settings will be written to Firebase. Continue?",
+    p_datos_estado: "{n} products · {c} categories · {p} orders", p_sembrar: "Load sample catalog", p_sembrar_confirmar: "Sample products (including the Verduras a domicilio flyer) and any missing categories, subcategories and units will be added. Sample products that already exist take the sample prices. Your name, WhatsApp, colors and photos are not touched. Continue?",
+    p_sembrar_ok: "Sample catalog loaded: {n} products", p_exportar: "Download backup (JSON)", p_importar: "Import backup (JSON)", p_importar_confirmar: "{n} products and the settings will be written to Firebase. Continue?",
     p_importado: "Backup imported", p_import_err: "That file is not a valid backup",
 
     grid_error: "We couldn’t connect to the shop", grid_error_sub: "Check your internet connection.", reintentar: "Retry",

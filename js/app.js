@@ -4,8 +4,8 @@
    Los datos llegan en tiempo real desde Firebase (db.js).
    ============================================================ */
 import { t } from "./i18n.js";
-import { SEMILLA } from "./data.js";
-import { esc, dinero, hora, nombre, tema, idioma, carritoLocal, favicon, ICON, aplicarApariencia } from "./store.js";
+import { SEMILLA, IMAGENES } from "./data.js";
+import { esc, dinero, hora, nombre, tema, idioma, carritoLocal, favicon, ICON, aplicarApariencia, imagenProducto } from "./store.js";
 import { suscribirTienda, crearPedido, ordenarProductos, esActivo } from "./db.js";
 
 favicon();
@@ -36,10 +36,11 @@ const EMOJI_CAT = { frutas: "🍎", verduras: "🥬", carnes: "🥩", abarrotes:
 
 /* ---------- imagen de producto: lazy, tamaño fijo, alt descriptivo y fallback a emoji ---------- */
 function icono(p, tam = 68) {
-  const emoji = esc(p.icono || EMOJI_CAT[p.cat] || "🛒");
-  if (!p.imagen) return `<span class="emoji" aria-hidden="true">${emoji}</span>`;
+  const emoji = esc(p.icono || EMOJI_CAT[p.cat] || "🛒"), src = imagenProducto(p, IMAGENES);
+  if (!src) return `<span class="emoji" aria-hidden="true">${emoji}</span>`;
   const alt = esc(t("img_alt", { n: nombre(p, lang()), c: categoria(p.cat) }));
-  return `<img src="${esc(p.imagen)}" alt="${alt}" width="${tam}" height="${tam}" loading="lazy" decoding="async" onload="this.parentElement.classList.add('ok')" onerror="this.parentElement.classList.add('fallo');this.remove()"><span class="emoji" aria-hidden="true">${emoji}</span>`;
+  const h = Math.round(tam * .75);
+  return `<img src="${esc(src)}" alt="${alt}" width="${tam}" height="${h}" loading="lazy" decoding="async" onload="this.parentElement.classList.add('ok')" onerror="this.parentElement.classList.add('fallo');this.remove()"><span class="emoji" aria-hidden="true">${emoji}</span>`;
 }
 
 /* ---------- horario con hora real de Lima ---------- */
@@ -306,7 +307,7 @@ function render() {
   grid.innerHTML = filtrada.length ? filtrada.map(p => `
     <article class="prod" data-id="${esc(p.id)}">
       ${enOferta(p) ? `<span class="oferta">${t("oferta")}</span>` : ""}
-      <span class="icono">${icono(p)}</span>
+      <span class="icono">${icono(p, 320)}</span>
       <h3>${esc(nombre(p, L))}</h3>
       <small>${p.sub && subcategoria(p.cat, p.sub) ? `${esc(subcategoria(p.cat, p.sub))} · ` : ""}${t("por", { u: esc(unidad(p.unidad)) })}</small>
       <div class="precio">${S(p.precio)}${p.antes > p.precio ? `<s>${S(p.antes)}</s>` : ""}</div>
@@ -386,7 +387,7 @@ function ayuda(mostrar) {
 
 /* ---------- efectos ---------- */
 function volar(desde, p) {
-  if (reducido() || p.imagen) return;
+  if (reducido() || imagenProducto(p, IMAGENES)) return;
   const a = desde.getBoundingClientRect(), b = $("btnCarrito").getBoundingClientRect();
   const el = document.createElement("span"); el.className = "vuela"; el.textContent = p.icono || EMOJI_CAT[p.cat] || "🛒";
   el.style.left = a.left + a.width / 2 + "px"; el.style.top = a.top + "px";
