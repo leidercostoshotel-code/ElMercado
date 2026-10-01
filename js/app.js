@@ -89,7 +89,8 @@ function plantilla() {
   const fotos = (c.portada || []).filter(f => f && f.url).slice(0, 12);
   /* srcset nítido para pantallas retina; las URLs de Unsplash aceptan parámetros, otras se usan tal cual */
   const src = (u, w) => /images\.unsplash\.com/.test(u) ? `${u.split("?")[0]}?w=${w}&q=82&auto=format&fit=crop` : u;
-  const pasarela = fotos.length ? `<div class="pasarela" id="pasarela" aria-hidden="true">${fotos.map((f, i) => `<img src="${esc(src(f.url, 900))}" srcset="${esc(src(f.url, 900))} 900w, ${esc(src(f.url, 1400))} 1400w" sizes="(max-width: 768px) 100vw, 45vw" alt="${esc(nombre(f, L))}" width="900" height="675" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" draggable="false">`).join("")}<div class="canasta respaldo">${frutas}</div></div>` : `<div class="canasta" aria-hidden="true">${frutas}</div>`;
+  /* con fotos: ocupan todo el fondo del hero y el texto queda delante; sin fotos: la canasta de emojis a la derecha */
+  const pasarela = fotos.length ? `<div class="pasarela" id="pasarela" aria-hidden="true">${fotos.map((f, i) => `<img src="${esc(src(f.url, 1600))}" srcset="${esc(src(f.url, 900))} 900w, ${esc(src(f.url, 1600))} 1600w, ${esc(src(f.url, 2400))} 2400w" sizes="100vw" alt="${esc(nombre(f, L))}" width="1600" height="900" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" draggable="false">`).join("")}<div class="canasta respaldo">${frutas}</div><div class="velo-hero"></div></div>` : "";
   return `
 <a class="saltar" href="#tienda">${t("nav_tienda")}</a>
 <header class="top">
@@ -105,7 +106,8 @@ function plantilla() {
 </header>
 
 <main id="contenido">
-<section class="hero" id="inicio">
+<section class="hero ${fotos.length ? "con-fotos" : ""}" id="inicio">
+  ${pasarela}
   <div class="wrap">
     <div>
       <div class="estado ${est.abierto ? "" : "cerrado"}"><i></i><span id="estadoTexto">${est.texto}</span></div>
@@ -113,7 +115,7 @@ function plantilla() {
       <p>${t("hero_texto")}</p>
       <div class="cta"><a class="btn btn-tomate" href="#tienda">${t("hero_cta")}</a><a class="btn btn-claro" href="#como">${t("hero_cta2")}</a></div>
     </div>
-    ${pasarela}
+    ${fotos.length ? "" : `<div class="canasta" aria-hidden="true">${frutas}</div>`}
   </div>
   <div class="ola"></div>
 </section>

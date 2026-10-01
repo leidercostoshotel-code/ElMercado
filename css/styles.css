@@ -97,14 +97,32 @@ svg { display: block; }
 .estado.cerrado i { background: var(--mango); animation: none; }
 @keyframes latido { 70% { box-shadow: 0 0 0 8px rgba(139, 195, 74, 0); } }
 .canasta { position: relative; height: 340px; }
-.pasarela { position: relative; aspect-ratio: 4 / 3; max-height: 440px; width: 100%; border-radius: 28px; overflow: hidden; box-shadow: 0 30px 60px rgba(0, 0, 0, .35), 0 0 0 6px rgba(255, 255, 255, .08); background: var(--verde-osc); isolation: isolate; }
-.pasarela img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1.6s ease-in-out; will-change: opacity, transform; }
-.pasarela img.activa { opacity: 1; animation: kenburns 7s ease-in-out forwards; }
-@keyframes kenburns { from { transform: scale(1.06) translate(0, 0); } to { transform: scale(1.16) translate(-1.5%, -1.5%); } }
-.pasarela::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(12, 74, 39, .55) 100%); pointer-events: none; }
-.pasarela .respaldo { position: absolute; inset: 0; height: auto; opacity: 0; transition: opacity .4s; }
-.pasarela.sin-fotos { box-shadow: none; background: none; }
-.pasarela.sin-fotos::after { display: none; }
+/* Pasarela a pantalla completa: las fotos llenan el fondo del hero y el texto queda delante */
+.hero.con-fotos { min-height: min(86vh, 760px); display: flex; align-items: center; padding: 4rem 0 6rem; background: var(--verde-osc); }
+.hero.con-fotos .wrap { position: relative; z-index: 2; grid-template-columns: minmax(0, 1fr); }
+.hero.con-fotos .wrap > div { max-width: 640px; }
+.pasarela { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--verde-osc); }
+.pasarela img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity 1.8s ease-in-out; will-change: opacity, transform; }
+.pasarela img.activa { opacity: 1; animation: kenburns 8s ease-in-out forwards; }
+@keyframes kenburns { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.14) translate(-1.5%, -1%); } }
+/* Velo: verde de la marca casi sólido bajo el texto y transparente hacia la derecha, para que la foto se luzca */
+.velo-hero { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--verde-osc) 94%, transparent) 0%,
+      color-mix(in srgb, var(--verde-osc) 82%, transparent) 34%,
+      color-mix(in srgb, var(--verde-osc) 38%, transparent) 62%,
+      color-mix(in srgb, var(--verde-osc) 8%, transparent) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, .25) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 70%, color-mix(in srgb, var(--verde-osc) 70%, transparent) 100%); }
+.hero.con-fotos h1 { text-shadow: 0 4px 30px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .35); }
+.hero.con-fotos p { color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, .55); }
+.hero.con-fotos .estado { background: rgba(0, 0, 0, .45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.hero.con-fotos .btn-claro { background: rgba(0, 0, 0, .28); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.hero.con-fotos .ola { z-index: 3; }
+/* Si ninguna foto carga, quedan los emojis a la derecha sobre el verde */
+.pasarela .respaldo { position: absolute; top: 12%; bottom: 14%; right: 4%; width: 42%; height: auto; opacity: 0; transition: opacity .4s; }
+.pasarela.sin-fotos { background: var(--verde); }
+.pasarela.sin-fotos .velo-hero { display: none; }
 .pasarela.sin-fotos .respaldo { opacity: 1; }
 .pasarela.lista .respaldo { display: none; }
 .fruta { position: absolute; font-size: clamp(3rem, 6vw, 5.2rem); filter: drop-shadow(0 12px 12px rgba(0, 0, 0, .25)); animation: caer .9s cubic-bezier(.22, 1.2, .36, 1) both, flotar 5s ease-in-out infinite; animation-delay: var(--d), calc(var(--d) + .9s); user-select: none; transition: transform .2s; line-height: 1; }
@@ -112,7 +130,12 @@ svg { display: block; }
 @keyframes caer { from { transform: translateY(-500px) rotate(-30deg); opacity: 0; } }
 @keyframes flotar { 50% { translate: 0 -12px; } }
 .ola { position: absolute; left: 0; right: 0; bottom: -1px; height: 60px; background: var(--fondo); clip-path: ellipse(60% 100% at 50% 100%); }
-@media (max-width: 768px) { .hero .wrap { grid-template-columns: 1fr; } .canasta { height: 220px; } .pasarela { aspect-ratio: 16 / 10; max-height: 300px; border-radius: 20px; } }
+@media (max-width: 768px) { .hero .wrap { grid-template-columns: 1fr; } .canasta { height: 220px; } }
+@media (max-width: 768px) {
+  .hero.con-fotos { min-height: 0; padding: 3rem 0 5rem; }
+  .velo-hero { background: linear-gradient(180deg, color-mix(in srgb, var(--verde-osc) 70%, transparent) 0%, color-mix(in srgb, var(--verde-osc) 82%, transparent) 45%, color-mix(in srgb, var(--verde-osc) 92%, transparent) 100%); }
+  .pasarela .respaldo { display: none; }
+}
 
 /* ---------- marquesina ---------- */
 .ofertas { margin-top: -2rem; position: relative; z-index: 2; }
