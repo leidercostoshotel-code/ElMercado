@@ -3,9 +3,9 @@
    - Fuentes de Google: cache-first
    - Firebase (Firestore, Auth, Storage, gstatic SDK): siempre red, sin cachear (Firestore ya tiene su caché local)
    - Navegaciones: network-first con respaldo al shell en caché */
-const VERSION = "mercado-v3";
+const VERSION = "mercado-v4";
 const SHELL = ["/", "/index.html", "/admin.html", "/404.html", "/manifest.json", "/css/styles.css",
-  "/js/app.js", "/js/admin.js", "/js/db.js", "/js/data.js", "/js/i18n.js", "/js/store.js", "/js/firebase-config.js",
+  "/js/app.js", "/js/admin.js", "/js/db.js", "/js/data.js", "/js/i18n.js", "/js/store.js", "/js/traducir.js", "/js/firebase-config.js",
   "/img/icon-192.png", "/img/icon-512.png"];
 const SOLO_RED = ["firestore.googleapis.com", "firebasestorage.googleapis.com", "identitytoolkit.googleapis.com", "securetoken.googleapis.com", "www.googleapis.com", "wa.me", "api.whatsapp.com"];
 

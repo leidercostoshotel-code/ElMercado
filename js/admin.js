@@ -7,6 +7,7 @@ import { t } from "./i18n.js";
 import { SEMILLA } from "./data.js";
 import { esc, dinero, nombre, tema, idioma, slug, clone, fecha, favicon, ICON, FUENTES, APARIENCIA_BASE, aplicarApariencia, cargarFuentes } from "./store.js";
 import * as db from "./db.js";
+import { enlazarTraduccion, traducirVarios } from "./traducir.js";
 const activo = p => p.activo !== false && p.visible !== false;
 
 favicon();
@@ -238,9 +239,11 @@ function formulario(i) {
   const cerrar = () => velo.remove();
   $("f_cancelar").onclick = cerrar; velo.onclick = e => { if (e.target === velo) cerrar(); };
   $("f_es").focus();
-  $("formProd").onsubmit = e => {
+  const esperarEn = enlazarTraduccion($("f_es"), $("f_en"));
+  $("formProd").onsubmit = async e => {
     e.preventDefault();
-    const es = $("f_es").value.trim(), en = $("f_en").value.trim();
+    const es = $("f_es").value.trim();
+    const en = $("f_en").dataset.auto === "1" && es ? await esperarEn() : $("f_en").value.trim();
     const precio = parseFloat($("f_precio").value), antes = $("f_antes").value ? parseFloat($("f_antes").value) : null;
     if (!es) return $("f_error").textContent = t("p_err_nombre");
     if (!(precio > 0)) return $("f_error").textContent = t("p_err_precio");
@@ -310,6 +313,8 @@ function importar() {
       ok.push({ id: existente ? existente.id : idUnico(nombreP), es: nombreP, en: existente?.en || nombreP, cat, unidad: uni, precio: +precio.toFixed(2), oferta, imagen: imagen.trim(), icono: existente?.icono || "🛒", activo: true, visible: true, orden: existente?.orden ?? orden++ });
     });
     const res = $("csvResultado");
+    const sinTraducir = ok.filter(p => !p.en || p.en === p.es);
+    if (sinTraducir.length) { $("csvImportar").disabled = true; (await traducirVarios(sinTraducir.map(p => p.es))).forEach((en, k) => { sinTraducir[k].en = en; }); $("csvImportar").disabled = false; }
     try { if (ok.length) await db.guardarProductos(ok); }
     catch (e) { fallo(e); return; }
     res.innerHTML = `<div class="pub-estado ${errores.length ? "local" : ""}"><i></i>${t("p_importar_res", { ok: ok.length, err: errores.length })}</div>${errores.length ? `<ul>${errores.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`;
@@ -332,6 +337,12 @@ function vistaCategorias() {
   const col = tipo => tipo === "cat" ? D.categorias : D.unidades;
   const persistir = () => guardar(db.guardarCatalogo({ categorias: D.categorias, unidades: D.unidades }));
   $("vista").onchange = e => { const inp = e.target.closest("[data-campo]"); if (!inp) return; const it = inp.closest(".item"); col(it.dataset.tipo)[+it.dataset.i][inp.dataset.campo] = inp.value.trim(); persistir(); };
+  /* traducción automática: filas existentes (si el inglés está vacío o igual al español) y formularios nuevos */
+  document.querySelectorAll("#vista .item:not(.nuevo)").forEach(it => {
+    enlazarTraduccion(it.querySelector('[data-campo="es"]'), it.querySelector('[data-campo="en"]'), tr => { col(it.dataset.tipo)[+it.dataset.i].en = tr; persistir(); });
+  });
+  const esperas = new Map();
+  document.querySelectorAll("#vista form.nuevo").forEach(f => esperas.set(f, enlazarTraduccion(f.es, f.en)));
   $("vista").onclick = e => {
     const b = e.target.closest("[data-borra]"); if (!b) return;
     const it = b.closest(".item"), tipo = it.dataset.tipo, i = +it.dataset.i, c = col(tipo)[i];
@@ -339,9 +350,10 @@ function vistaCategorias() {
     if (uso) return alert(t(tipo === "cat" ? "p_cat_en_uso" : "p_unidad_en_uso", { n: uso }));
     if (confirm(t("p_cat_confirmar", { n: c.es }))) { col(tipo).splice(i, 1); persistir(); }
   };
-  $("vista").onsubmit = e => {
+  $("vista").onsubmit = async e => {
     e.preventDefault();
-    const f = e.target, tipo = f.dataset.tipo, es = f.es.value.trim(), en = f.en.value.trim() || es;
+    const f = e.target, tipo = f.dataset.tipo, es = f.es.value.trim();
+    const en = (f.en.dataset.auto === "1" ? await esperas.get(f)?.() : f.en.value.trim()) || es;
     let id = slug(es), n = 2; while (col(tipo).some(x => x.id === id)) id = slug(es) + "-" + n++;
     col(tipo).push({ id, es, en }); persistir();
   };
@@ -427,8 +439,11 @@ function vistaTienda() {
     const portada = urlsPortada().map(u => previas.find(p => p.url === u) || { url: u, es: "", en: "" });
     guardar(db.guardarConfig({ apariencia, portada }));
   };
-  $("formTienda").onsubmit = e => {
+  const esperaLema = enlazarTraduccion($("c_lema_es"), $("c_lema_en")), esperaDir = enlazarTraduccion($("c_dir_es"), $("c_dir_en"));
+  $("formTienda").onsubmit = async e => {
     e.preventDefault();
+    if ($("c_lema_en").dataset.auto === "1") await esperaLema();
+    if ($("c_dir_en").dataset.auto === "1") await esperaDir();
     guardar(db.guardarConfig({
       nombre: $("c_nombre").value.trim(), whatsapp: $("c_wa").value.replace(/\D/g, ""),
       lema: { es: $("c_lema_es").value.trim(), en: $("c_lema_en").value.trim() || $("c_lema_es").value.trim() },
@@ -450,6 +465,7 @@ function vistaDatos() {
     <div class="herramientas">
       <button type="button" class="btn btn-borde" id="btnExportar">${t("p_exportar")}</button>
       <label class="btn btn-borde" for="inpImportar">${t("p_importar")}</label><input type="file" id="inpImportar" accept="application/json,.json" class="sr">
+      <button type="button" class="btn btn-borde" id="btnTraducir">🌐 ${t("p_traducir_faltantes")}</button>
       <button type="button" class="btn btn-peligro" id="btnSembrar">${t("p_sembrar")}</button>
     </div>
   </div>`;
@@ -466,6 +482,20 @@ function vistaDatos() {
       if (!confirm(t("p_importar_confirmar", { n: d.productos.length }))) return;
       return db.sembrar({ config: d.config, categorias: d.categorias || D.categorias, unidades: d.unidades || D.unidades, productos: d.productos.map(p => ({ ...p, id: p.id || slug(p.es), activo: p.activo ?? p.visible ?? true })) }).then(() => avisar(t("p_importado")));
     }).catch(err => (err === 0 || err instanceof SyntaxError) ? alert(t("p_import_err")) : fallo(err));
+  };
+  $("btnTraducir").onclick = async () => {
+    const falta = x => !x.en || x.en.trim() === (x.es || "").trim();
+    const prods = D.productos.filter(falta), cats = D.categorias.filter(falta), unis = D.unidades.filter(falta);
+    const total = prods.length + cats.length + unis.length;
+    if (!total) return avisar(t("p_traducir_nada"));
+    const b = $("btnTraducir"); b.disabled = true; b.textContent = t("p_traduciendo", { n: total });
+    try {
+      const [tp, tc, tu] = await Promise.all([traducirVarios(prods.map(p => p.es)), traducirVarios(cats.map(c => c.es)), traducirVarios(unis.map(u => u.es))]);
+      if (prods.length) await db.guardarProductos(prods.map((p, k) => ({ id: p.id, en: tp[k] })));
+      if (cats.length || unis.length) { cats.forEach((c, k) => { c.en = tc[k]; }); unis.forEach((u, k) => { u.en = tu[k]; }); await db.guardarCatalogo({ categorias: D.categorias, unidades: D.unidades }); }
+      avisar(t("p_traducidos", { n: total }));
+    } catch (err) { fallo(err); }
+    b.disabled = false; b.textContent = "🌐 " + t("p_traducir_faltantes");
   };
   $("btnSembrar").onclick = () => { if (confirm(t("p_sembrar_confirmar"))) guardar(db.sembrar(SEMILLA), t("p_sembrar_ok")); };
 }
