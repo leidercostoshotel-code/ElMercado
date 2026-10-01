@@ -205,9 +205,10 @@ function plantilla() {
 }
 
 /* ---------- pasarela de fotos del hero: fundido cruzado + zoom lento ---------- */
-let tPasarela = null;
+let tPasarela = null, generacion = 0;
 function iniciarPasarela() {
-  clearInterval(tPasarela);
+  clearInterval(tPasarela); tPasarela = null;                 // se reinicia en cada redibujo (Firebase envía los datos en varias partes)
+  const gen = ++generacion;
   const cont = $("pasarela"); if (!cont) return;
   const fotos = [...cont.querySelectorAll("img")];
   let listas = [], activa = -1;
@@ -217,7 +218,7 @@ function iniciarPasarela() {
     listas.forEach((img, i) => img.classList.toggle("activa", i === activa));
     const sig = listas[(activa + 1) % listas.length]; if (sig) sig.loading = "eager";
   };
-  const arrancar = () => { if (tPasarela) return; cont.classList.add("lista"); mostrar(); tPasarela = setInterval(mostrar, reducido() ? 7000 : 5500); };
+  const arrancar = () => { if (tPasarela || gen !== generacion) return; cont.classList.add("lista"); mostrar(); tPasarela = setInterval(mostrar, reducido() ? 7000 : 5500); };
   fotos.forEach(img => {
     const ok = () => { if (!img.naturalWidth) return fallo(); listas.push(img); if (listas.length === 1) arrancar(); };
     const fallo = () => { img.remove(); if (!cont.querySelector("img")) cont.classList.add("sin-fotos"); };
