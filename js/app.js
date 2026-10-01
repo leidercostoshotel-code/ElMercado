@@ -85,10 +85,11 @@ function dibujar() {
 /* ---------- plantilla de la tienda ---------- */
 function plantilla() {
   const c = D.config, L = lang(), est = estadoTienda();
-  const frutas = activos().filter(p => p.icono).slice(0, 8).map((p, i) => {
-    const pos = [[8, 10], [52, 0], [78, 22], [22, 48], [60, 50], [5, 78], [40, 80], [80, 72]][i];
-    return `<span class="fruta" style="--d:${(i * .1 + .05).toFixed(2)}s;left:${pos[0]}%;top:${pos[1]}%">${esc(p.icono)}</span>`;
-  }).join("") || "🍅🥑🍋🥩🥕🍍🌽🍚".split(/(?:)/u).map((e, i) => `<span class="fruta" style="--d:${(i * .1 + .05).toFixed(2)}s;left:${[8, 52, 78, 22, 60, 5, 40, 80][i]}%;top:${[10, 0, 22, 48, 50, 78, 80, 72][i]}%">${e}</span>`).join("");
+  const frutas = "🍅🥑🍋🥩🥕🍍🌽🍚".split(/(?:)/u).map((e, i) => `<span class="fruta" style="--d:${(i * .1 + .05).toFixed(2)}s;left:${[8, 52, 78, 22, 60, 5, 40, 80][i]}%;top:${[10, 0, 22, 48, 50, 78, 80, 72][i]}%">${e}</span>`).join("");
+  const fotos = (c.portada || []).filter(f => f && f.url).slice(0, 12);
+  /* srcset nítido para pantallas retina; las URLs de Unsplash aceptan parámetros, otras se usan tal cual */
+  const src = (u, w) => /images\.unsplash\.com/.test(u) ? `${u.split("?")[0]}?w=${w}&q=82&auto=format&fit=crop` : u;
+  const pasarela = fotos.length ? `<div class="pasarela" id="pasarela" aria-hidden="true">${fotos.map((f, i) => `<img src="${esc(src(f.url, 900))}" srcset="${esc(src(f.url, 900))} 900w, ${esc(src(f.url, 1400))} 1400w" sizes="(max-width: 768px) 100vw, 45vw" alt="${esc(nombre(f, L))}" width="900" height="675" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" draggable="false">`).join("")}<div class="canasta respaldo">${frutas}</div></div>` : `<div class="canasta" aria-hidden="true">${frutas}</div>`;
   return `
 <a class="saltar" href="#tienda">${t("nav_tienda")}</a>
 <header class="top">
@@ -112,7 +113,7 @@ function plantilla() {
       <p>${t("hero_texto")}</p>
       <div class="cta"><a class="btn btn-tomate" href="#tienda">${t("hero_cta")}</a><a class="btn btn-claro" href="#como">${t("hero_cta2")}</a></div>
     </div>
-    <div class="canasta" aria-hidden="true">${frutas}</div>
+    ${pasarela}
   </div>
   <div class="ola"></div>
 </section>
@@ -196,6 +197,28 @@ function plantilla() {
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>`;
 }
 
+/* ---------- pasarela de fotos del hero: fundido cruzado + zoom lento ---------- */
+let tPasarela = null;
+function iniciarPasarela() {
+  clearInterval(tPasarela);
+  const cont = $("pasarela"); if (!cont) return;
+  const fotos = [...cont.querySelectorAll("img")];
+  let listas = [], activa = -1;
+  const mostrar = () => {
+    if (!listas.length) return;
+    activa = (activa + 1) % listas.length;
+    listas.forEach((img, i) => img.classList.toggle("activa", i === activa));
+    const sig = listas[(activa + 1) % listas.length]; if (sig) sig.loading = "eager";
+  };
+  const arrancar = () => { if (tPasarela) return; cont.classList.add("lista"); mostrar(); tPasarela = setInterval(mostrar, reducido() ? 7000 : 5500); };
+  fotos.forEach(img => {
+    const ok = () => { if (!img.naturalWidth) return fallo(); listas.push(img); if (listas.length === 1) arrancar(); };
+    const fallo = () => { img.remove(); if (!cont.querySelector("img")) cont.classList.add("sin-fotos"); };
+    if (img.complete) (img.naturalWidth ? ok : fallo)(); else { img.onload = ok; img.onerror = fallo; }
+  });
+  setTimeout(() => { if (!listas.length) cont.classList.add("sin-fotos"); }, 6000);        // si ninguna foto responde, queda la canasta de emojis
+}
+
 /* ---------- montaje ---------- */
 function montar() {
   const nom = $("nombre")?.value, dir = $("direccion")?.value, abierto = $("panel")?.classList.contains("abierto"), foco = document.activeElement?.id;
@@ -203,7 +226,7 @@ function montar() {
   $("app").innerHTML = plantilla();
   if (nom) $("nombre").value = nom;
   if (dir) $("direccion").value = dir;
-  marquesina(); categorias(); ofertasHoy(); render(); actualizar(); eventos();
+  marquesina(); categorias(); ofertasHoy(); render(); actualizar(); eventos(); iniciarPasarela();
   if (abierto) abrir(true);
   if (foco === "buscar") { const b = $("buscar"); b.focus(); b.setSelectionRange(b.value.length, b.value.length); }
   montado = true;

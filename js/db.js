@@ -96,7 +96,8 @@ export async function guardarProductos(lista) {
 /* Imagen de producto → Firebase Storage (productos/{id}.{ext}) */
 export async function subirImagen(archivo, id) {
   const ext = (archivo.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  const r = refStorage(storage, `productos/${id}-${Date.now()}.${ext}`);
+  const carpeta = id.startsWith("portada") ? "portada" : "productos";
+  const r = refStorage(storage, `${carpeta}/${id}-${Date.now()}.${ext}`);
   await uploadBytes(r, archivo, { contentType: archivo.type || "image/jpeg", cacheControl: "public, max-age=31536000" });
   return getDownloadURL(r);
 }
