@@ -14,7 +14,7 @@ favicon();
 let D = { config: SEMILLA.config, categorias: [], unidades: [], productos: [] };   // se reemplaza con Firebase
 let estado = { cargando: true };                                                   // cargando | error | listo
 let cancelar = null;
-let carrito = carritoLocal.get(), cat = "todo", q = "", modo = "delivery", yapaCelebrada = false, montado = false;
+let carrito = carritoLocal.get(), cat = "todo", sub = "", q = "", modo = "delivery", yapaCelebrada = false, montado = false;
 let promptInstalar = null;
 const lang = () => idioma.get();
 const S = v => dinero(v, D.config);
@@ -22,9 +22,12 @@ const activos = () => ordenarProductos(D.productos.filter(esActivo), D.categoria
 const prod = id => D.productos.find(p => p.id === id);
 const unidad = id => nombre(D.unidades.find(u => u.id === id), lang()) || id;
 const categoria = id => nombre(D.categorias.find(c => c.id === id), lang()) || id;
+const subcategoria = (catId, subId) => nombre((D.categorias.find(c => c.id === catId)?.sub || []).find(s => s.id === subId), lang()) || "";
 const enOferta = p => p.oferta === true || (p.antes > p.precio);
-const esKg = p => p.unidad === "kg";
-const paso = p => (esKg(p) ? 0.25 : 1);
+const uni = p => D.unidades.find(u => u.id === p.unidad);
+const paso = p => Number(uni(p)?.paso) > 0 ? Number(uni(p).paso) : (p.unidad === "kg" ? 0.25 : 1);
+const fraccionable = p => paso(p) !== 1;                           // kg, litro, g, ml… muestran la unidad junto a la cantidad
+const esKg = fraccionable;
 const fmtN = n => (Number.isInteger(n) ? String(n) : String(+n.toFixed(2)));
 const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const reducido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -129,6 +132,7 @@ function plantilla() {
     <div class="barra">
       <label class="buscar">${ICON.lupa}<input id="buscar" type="search" placeholder="${t("buscar")}" aria-label="${t("buscar")}" value="${esc(q)}" autocomplete="off"></label>
       <div class="cats" id="cats" role="group" aria-label="${t("nav_tienda")}"></div>
+      <div class="cats subs" id="subs" role="group" aria-label="${t("subcategorias")}" hidden></div>
     </div>
     <div class="grid" id="grid" aria-busy="true"></div>
   </div>
@@ -249,6 +253,19 @@ function categorias() {
   const of = lista.filter(enOferta).length; if (of) chips.push({ id: "ofertas", n: t("cat_ofertas"), c: of });
   if (!chips.some(c => c.id === cat)) cat = "todo";
   $("cats").innerHTML = chips.map(c => `<button type="button" class="cat" data-cat="${c.id}" aria-pressed="${c.id === cat}">${esc(c.n)}<span class="num">${c.c}</span></button>`).join("");
+  subcategorias();
+}
+/* Segunda fila: subcategorías de la categoría elegida que tengan productos activos */
+function subcategorias() {
+  const el = $("subs"), c = D.categorias.find(x => x.id === cat);
+  const delCat = activos().filter(p => p.cat === cat), conteo = {};
+  delCat.forEach(p => { if (p.sub) conteo[p.sub] = (conteo[p.sub] || 0) + 1; });
+  const lista = (c?.sub || []).filter(s => conteo[s.id]);
+  if (!lista.length) { el.hidden = true; el.innerHTML = ""; sub = ""; return; }
+  if (sub && !conteo[sub]) sub = "";
+  el.hidden = false;
+  el.innerHTML = [{ id: "", n: t("cat_todo"), c: delCat.length }, ...lista.map(s => ({ id: s.id, n: nombre(s, lang()), c: conteo[s.id] }))]
+    .map(s => `<button type="button" class="cat sub" data-sub="${s.id}" aria-pressed="${s.id === sub}">${esc(s.n)}<span class="num">${s.c}</span></button>`).join("");
 }
 
 function ofertasHoy() {
@@ -283,14 +300,15 @@ function render() {
   const nq = norm(q);
   const filtrada = lista.filter(p =>
     (cat === "todo" || (cat === "ofertas" ? enOferta(p) : p.cat === cat)) &&
-    (!nq || norm(nombre(p, L)).includes(nq) || norm(nombre(p, "es")).includes(nq) || norm(nombre(p, "en")).includes(nq) || norm(categoria(p.cat)).includes(nq)));
+    (!sub || p.sub === sub) &&
+    (!nq || norm(nombre(p, L)).includes(nq) || norm(nombre(p, "es")).includes(nq) || norm(nombre(p, "en")).includes(nq) || norm(categoria(p.cat)).includes(nq) || (p.sub && norm(subcategoria(p.cat, p.sub)).includes(nq))));
   $("contador").textContent = filtrada.length === 1 ? t("un_producto") : t("n_productos", { n: filtrada.length });
   grid.innerHTML = filtrada.length ? filtrada.map(p => `
     <article class="prod" data-id="${esc(p.id)}">
       ${enOferta(p) ? `<span class="oferta">${t("oferta")}</span>` : ""}
       <span class="icono">${icono(p)}</span>
       <h3>${esc(nombre(p, L))}</h3>
-      <small>${t("por", { u: esc(unidad(p.unidad)) })}</small>
+      <small>${p.sub && subcategoria(p.cat, p.sub) ? `${esc(subcategoria(p.cat, p.sub))} · ` : ""}${t("por", { u: esc(unidad(p.unidad)) })}</small>
       <div class="precio">${S(p.precio)}${p.antes > p.precio ? `<s>${S(p.antes)}</s>` : ""}</div>
       ${control(p)}
     </article>`).join("")
@@ -302,8 +320,8 @@ function render() {
 function control(p) {
   const n = carrito[p.id] || 0, id = esc(p.id), st = paso(p);
   return n
-    ? `<div class="stepper" role="group" aria-label="${t("cantidad")}"><button type="button" data-a="${-st}" data-id="${id}" aria-label="${t("quitar_uno")}">−</button><b aria-live="polite">${fmtN(n)}${esKg(p) ? " kg" : ""}</b><button type="button" data-a="${st}" data-id="${id}" aria-label="${t("agregar_uno")}">+</button></div>`
-    : `<button type="button" class="add" data-a="1" data-id="${id}">${t("agregar")} <span aria-hidden="true">+</span></button>`;
+    ? `<div class="stepper" role="group" aria-label="${t("cantidad")}"><button type="button" data-a="${-st}" data-id="${id}" aria-label="${t("quitar_uno")}">−</button><b aria-live="polite">${fmtN(n)}${fraccionable(p) ? " " + esc(unidad(p.unidad)) : ""}</b><button type="button" data-a="${st}" data-id="${id}" aria-label="${t("agregar_uno")}">+</button></div>`
+    : `<button type="button" class="add" data-a="${st >= 1 ? st : 1}" data-id="${id}">${t("agregar")} <span aria-hidden="true">+</span></button>`;
 }
 
 /* ---------- carrito ---------- */
@@ -454,8 +472,9 @@ function eventos() {
   $("btnTema").onclick = cambiarTema;
   document.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { if (idioma.get() !== b.dataset.lang) { idioma.set(b.dataset.lang); montar(); } });
   $("buscar").oninput = e => { q = e.target.value.trim(); render(); };
-  $("cats").onclick = e => { const b = e.target.closest("[data-cat]"); if (!b) return; cat = b.dataset.cat; [...$("cats").children].forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === cat)); render(); };
-  $("ofertasHoy").onclick = e => { const b = e.target.closest("[data-cat-link]"); if (!b) return; cat = b.dataset.catLink; [...$("cats").children].forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === cat)); render(); $("grid").scrollIntoView({ behavior: reducido() ? "auto" : "smooth", block: "start" }); };
+  $("cats").onclick = e => { const b = e.target.closest("[data-cat]"); if (!b) return; cat = b.dataset.cat; sub = ""; [...$("cats").children].forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === cat)); subcategorias(); render(); };
+  $("subs").onclick = e => { const b = e.target.closest("[data-sub]"); if (!b) return; sub = b.dataset.sub; [...$("subs").children].forEach(x => x.setAttribute("aria-pressed", x.dataset.sub === sub)); render(); };
+  $("ofertasHoy").onclick = e => { const b = e.target.closest("[data-cat-link]"); if (!b) return; cat = b.dataset.catLink; sub = ""; subcategorias(); [...$("cats").children].forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === cat)); render(); $("grid").scrollIntoView({ behavior: reducido() ? "auto" : "smooth", block: "start" }); };
   $("btnCarrito").onclick = () => abrir(true);
   $("cerrar").onclick = $("velo").onclick = () => abrir(false);
   $("formPedido").onsubmit = enviar;

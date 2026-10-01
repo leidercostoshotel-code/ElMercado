@@ -18,7 +18,8 @@ const DIC = {
   "kg": "kg", "kilo": "kilo", "kilos": "kilos", "gramo": "gram", "gramos": "grams", "g": "g", "unidad": "each", "unidades": "units",
   "atado": "bunch", "manojo": "bunch", "paquete": "pack", "bolsa": "bag", "docena": "dozen", "media docena": "half dozen",
   "litro": "liter", "litros": "liters", "botella": "bottle", "lata": "can", "caja": "box", "bandeja": "tray", "racimo": "bunch",
-  "libra": "pound", "saco": "sack", "malla": "mesh bag", "sobre": "packet", "frasco": "jar", "porcion": "portion", "porción": "portion",
+  "libra": "lb", "libras": "lb", "medio kilo": "half kilo", "arroba": "arroba", "ml": "ml", "mililitro": "ml", "mililitros": "ml",
+  "galon": "gallon", "galón": "gallon", "galones": "gallons", "onza": "oz", "onzas": "oz", "tonelada": "ton", "cajon": "crate", "cajón": "crate", "saco": "sack", "malla": "mesh bag", "sobre": "packet", "frasco": "jar", "porcion": "portion", "porción": "portion",
   /* frutas */
   "palta": "Avocado", "aguacate": "Avocado", "platano": "Banana", "plátano": "Banana", "manzana": "Apple", "pera": "Pear",
   "naranja": "Orange", "mandarina": "Tangerine", "limon": "Lime", "limón": "Lime", "pina": "Pineapple", "piña": "Pineapple",

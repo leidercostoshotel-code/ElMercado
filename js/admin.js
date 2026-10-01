@@ -167,7 +167,7 @@ function filas() {
   $("filas").innerHTML = lista.length ? lista.map(({ p, i }) => `
     <tr class="${activo(p) ? "" : "invisible"}">
       <td class="celda-prod"><div class="prod-celda"><span class="icono">${p.imagen ? `<img src="${esc(p.imagen)}" alt="" loading="lazy" width="35" height="35" onerror="this.parentElement.classList.add('fallo');this.remove()">` : ""}<span class="emoji">${esc(p.icono || "🛒")}</span></span><div><b>${esc(p.es)}</b><small>${esc(p.en || "")} · ${esc(nombre(D.unidades.find(u => u.id === p.unidad), L) || p.unidad)}</small></div></div></td>
-      <td><span class="pill">${esc(nombre(D.categorias.find(c => c.id === p.cat), L) || p.cat)}</span></td>
+      <td><span class="pill">${esc(nombre(D.categorias.find(c => c.id === p.cat), L) || p.cat)}</span>${p.sub ? `<small class="sub-pill">${esc(nombre((D.categorias.find(c => c.id === p.cat)?.sub || []).find(s => s.id === p.sub), L) || p.sub)}</small>` : ""}</td>
       <td class="num"><span class="precio-inline"><input type="number" step="0.01" min="0.01" inputmode="decimal" value="${p.precio}" data-precio="${esc(p.id)}" aria-label="${t("p_precio_inline")}: ${esc(p.es)}"><button type="button" class="mini" data-ok-precio="${esc(p.id)}" title="${t("p_guardar")}" hidden>✓</button></span>${p.antes > p.precio ? ` <s>${S(p.antes)}</s>` : ""}</td>
       <td><label class="switch"><input type="checkbox" data-vis="${esc(p.id)}" ${activo(p) ? "checked" : ""} aria-label="${t("p_col_activo")}: ${esc(p.es)}"><i></i></label></td>
       <td><div class="acciones">
@@ -216,6 +216,7 @@ function formulario(i) {
       <div class="campo"><label for="f_es">${t("p_nombre_es")}</label><input id="f_es" value="${esc(p.es)}" required></div>
       <div class="campo"><label for="f_en">${t("p_nombre_en")}</label><input id="f_en" value="${esc(p.en || "")}"></div>
       <div class="campo"><label for="f_cat">${t("p_categoria")}</label><select id="f_cat">${D.categorias.map(c => `<option value="${c.id}" ${c.id === p.cat ? "selected" : ""}>${esc(nombre(c, L))}</option>`).join("")}</select></div>
+      <div class="campo"><label for="f_sub">${t("p_subcategoria")}</label><select id="f_sub"></select></div>
       <div class="campo"><label for="f_unidad">${t("p_unidad")}</label><select id="f_unidad">${D.unidades.map(u => `<option value="${u.id}" ${u.id === p.unidad ? "selected" : ""}>${esc(nombre(u, L))}</option>`).join("")}</select></div>
       <div class="campo"><label for="f_precio">${t("p_precio")} (${esc(cfg().moneda)})</label><input id="f_precio" type="number" step="0.01" min="0" inputmode="decimal" value="${p.precio}" required></div>
       <div class="campo"><label for="f_antes">${t("p_antes")}</label><input id="f_antes" type="number" step="0.01" min="0" inputmode="decimal" value="${p.antes ?? ""}"></div>
@@ -240,6 +241,12 @@ function formulario(i) {
   $("f_cancelar").onclick = cerrar; velo.onclick = e => { if (e.target === velo) cerrar(); };
   $("f_es").focus();
   const esperarEn = enlazarTraduccion($("f_es"), $("f_en"));
+  const llenarSubs = () => {
+    const c = D.categorias.find(x => x.id === $("f_cat").value), subs = c?.sub || [];
+    $("f_sub").innerHTML = `<option value="">${t("p_sin_subcategoria")}</option>` + subs.map(s => `<option value="${esc(s.id)}" ${s.id === p.sub ? "selected" : ""}>${esc(nombre(s, L))}</option>`).join("");
+    $("f_sub").disabled = !subs.length;
+  };
+  $("f_cat").onchange = llenarSubs; llenarSubs();
   $("formProd").onsubmit = async e => {
     e.preventDefault();
     const es = $("f_es").value.trim();
@@ -248,7 +255,7 @@ function formulario(i) {
     if (!es) return $("f_error").textContent = t("p_err_nombre");
     if (!(precio > 0)) return $("f_error").textContent = t("p_err_precio");
     if (antes !== null && !(antes > precio)) return $("f_error").textContent = t("p_err_antes");
-    const datos = { es, en: en || es, cat: $("f_cat").value, unidad: $("f_unidad").value, icono: $("f_icono").value.trim() || "🛒", imagen: $("f_imagen").value.trim() || "", precio: +precio.toFixed(2), antes: antes === null ? null : +antes.toFixed(2), activo: $("f_visible").checked, visible: $("f_visible").checked };
+    const datos = { es, en: en || es, cat: $("f_cat").value, sub: $("f_sub").value || null, unidad: $("f_unidad").value, icono: $("f_icono").value.trim() || "🛒", imagen: $("f_imagen").value.trim() || "", precio: +precio.toFixed(2), antes: antes === null ? null : +antes.toFixed(2), activo: $("f_visible").checked, visible: $("f_visible").checked };
     if (nuevo) datos.orden = D.productos.length;
     guardar(db.guardarProducto(nuevo ? idUnico(es) : p.id, datos)); cerrar();
   };
@@ -291,7 +298,7 @@ function importar() {
   $("csvCerrar").onclick = cerrar; velo.onclick = e => { if (e.target === velo) cerrar(); };
   $("csvArchivo").onchange = e => { const f = e.target.files[0]; if (f) f.text().then(tx => { $("csvTexto").value = tx; }); };
   $("csvPlantilla").onclick = () => {
-    const csv = "nombre,categoria,precio,unidad,oferta,imagen\nPalta fuerte,frutas,8.90,kg,si,https://ejemplo.com/palta.jpg\nTomate,verduras,3.80,kg,no,\nPollo entero,carnes,10.90,kg,no,";
+    const csv = "nombre,categoria,precio,unidad,oferta,imagen,subcategoria\nPalta fuerte,frutas,8.90,kg,si,https://ejemplo.com/palta.jpg,tropicales\nTomate,verduras,3.80,kg,no,,hortalizas\nPollo entero,carnes,10.90,kg,no,,pollo";
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })); a.download = "plantilla-productos.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
   $("csvImportar").onclick = async () => {
@@ -302,15 +309,17 @@ function importar() {
     filas.slice(inicio).forEach((f, i) => {
       const n = i + inicio + 1;
       if (f.length < 4) return errores.push(t("p_importar_fila", { n, m: t("p_err_columnas") }));
-      const [nombreP, catTxt, precioTxt, uniTxt, ofertaTxt = "", imagen = ""] = f;
+      const [nombreP, catTxt, precioTxt, uniTxt, ofertaTxt = "", imagen = "", subTxt = ""] = f;
       const cat = buscarId(D.categorias, catTxt), uni = buscarId(D.unidades, uniTxt);
+      const subcat = subTxt.trim() && cat ? buscarId(D.categorias.find(c => c.id === cat)?.sub || [], subTxt) : null;
       const precio = parseFloat(String(precioTxt).replace(",", "."));
       if (!cat) return errores.push(t("p_importar_fila", { n, m: t("p_err_cat", { c: catTxt }) }));
       if (!uni) return errores.push(t("p_importar_fila", { n, m: t("p_err_uni", { u: uniTxt }) }));
       if (!(precio > 0)) return errores.push(t("p_importar_fila", { n, m: t("p_err_precio_fila") }));
+      if (subTxt.trim() && !subcat) return errores.push(t("p_importar_fila", { n, m: t("p_err_sub", { s: subTxt }) }));
       const oferta = /^(s[ií]|yes|y|1|true)$/i.test(ofertaTxt.trim());
       const existente = D.productos.find(p => slug(p.es) === slug(nombreP));
-      ok.push({ id: existente ? existente.id : idUnico(nombreP), es: nombreP, en: existente?.en || nombreP, cat, unidad: uni, precio: +precio.toFixed(2), oferta, imagen: imagen.trim(), icono: existente?.icono || "🛒", activo: true, visible: true, orden: existente?.orden ?? orden++ });
+      ok.push({ id: existente ? existente.id : idUnico(nombreP), es: nombreP, en: existente?.en || nombreP, cat, sub: subcat || existente?.sub || null, unidad: uni, precio: +precio.toFixed(2), oferta, imagen: imagen.trim(), icono: existente?.icono || "🛒", activo: true, visible: true, orden: existente?.orden ?? orden++ });
     });
     const res = $("csvResultado");
     const sinTraducir = ok.filter(p => !p.en || p.en === p.es);
@@ -325,25 +334,55 @@ function importar() {
 /* ---------- categorías y unidades ---------- */
 function vistaCategorias() {
   const usoCat = id => D.productos.filter(p => p.cat === id).length, usoUni = id => D.productos.filter(p => p.unidad === id).length;
+  const usoSub = (catId, subId) => D.productos.filter(p => p.cat === catId && p.sub === subId).length;
+  const subsHTML = (c, i) => `
+      <div class="subcats" data-cat-i="${i}">
+        <span class="subcats-titulo">${t("subcategorias")}</span>
+        ${(c.sub || []).map((s, k) => `<span class="subcat" data-k="${k}"><input data-sub-campo="es" value="${esc(s.es)}" aria-label="${t("p_cat_nombre_es")}"><input data-sub-campo="en" value="${esc(s.en)}" aria-label="${t("p_cat_nombre_en")}"><small class="pill">${usoSub(c.id, s.id)}</small><button type="button" class="mini peligro" data-borra-sub="${k}" title="${t("p_borrar")}">✕</button></span>`).join("")}
+        <form class="subcat nueva-sub" data-cat-i="${i}"><input name="es" placeholder="${t("p_sub_nueva")}" required><input name="en" placeholder="${t("p_cat_nombre_en")}"><button class="btn btn-borde chico">+ ${t("p_cat_agregar")}</button></form>
+      </div>`;
   const lista = (tipo, items, uso) => items.map((c, i) => `
     <div class="item" data-tipo="${tipo}" data-i="${i}">
       <input data-campo="es" value="${esc(c.es)}" aria-label="${t("p_cat_nombre_es")}"><input data-campo="en" value="${esc(c.en)}" aria-label="${t("p_cat_nombre_en")}">
-      <div class="acciones"><span class="pill">${uso(c.id)}</span><button type="button" class="mini peligro" data-borra="${i}" title="${t("p_borrar")}">${ICON.basura}</button></div>
+      <div class="acciones">${tipo === "uni" ? `<label class="paso-uni" title="${t("p_paso_ayuda")}">${t("p_paso")}<input data-campo="paso" type="number" step="any" min="0.01" inputmode="decimal" value="${c.paso ?? (c.id === "kg" ? 0.25 : 1)}"></label>` : ""}<span class="pill">${uso(c.id)}</span><button type="button" class="mini peligro" data-borra="${i}" title="${t("p_borrar")}">${ICON.basura}</button></div>
+      ${tipo === "cat" ? subsHTML(c, i) : ""}
     </div>`).join("") + `
     <form class="item nuevo" data-tipo="${tipo}"><input name="es" placeholder="${t("p_cat_nombre_es")}" required><input name="en" placeholder="${t("p_cat_nombre_en")}"><button class="btn btn-verde chico">${t("p_cat_agregar")}</button></form>`;
   $("vista").innerHTML = `
   <div class="tarjeta"><h2>${t("p_tab_categorias")}</h2><h3>${t("p_cat_nueva")}</h3><div class="lista">${lista("cat", D.categorias, usoCat)}</div></div>
-  <div class="tarjeta"><h2>${t("p_unidades")}</h2><h3>${t("p_unidad_nueva")}</h3><div class="lista">${lista("uni", D.unidades, usoUni)}</div></div>`;
+  <div class="tarjeta"><div class="herramientas" style="justify-content:space-between;margin:0"><h2>${t("p_unidades")}</h2><button type="button" class="btn btn-borde chico" id="btnUnidadesComunes">+ ${t("p_unidades_comunes")}</button></div><p style="color:var(--tinta-2);margin:.2rem 0 .6rem">${t("p_paso_ayuda")}</p><h3>${t("p_unidad_nueva")}</h3><div class="lista">${lista("uni", D.unidades, usoUni)}</div></div>`;
+  $("btnUnidadesComunes").onclick = () => {
+    const faltan = SEMILLA.unidades.filter(u => !D.unidades.some(x => x.id === u.id));
+    if (!faltan.length) return avisar(t("p_unidades_completas"));
+    D.unidades.push(...clone(faltan)); persistir(t("p_unidades_agregadas", { n: faltan.length }));
+  };
   const col = tipo => tipo === "cat" ? D.categorias : D.unidades;
-  const persistir = () => guardar(db.guardarCatalogo({ categorias: D.categorias, unidades: D.unidades }));
-  $("vista").onchange = e => { const inp = e.target.closest("[data-campo]"); if (!inp) return; const it = inp.closest(".item"); col(it.dataset.tipo)[+it.dataset.i][inp.dataset.campo] = inp.value.trim(); persistir(); };
+  const persistir = msg => guardar(db.guardarCatalogo({ categorias: D.categorias, unidades: D.unidades }), msg);
+  $("vista").onchange = e => {
+    const sc = e.target.closest("[data-sub-campo]");
+    if (sc) { const ci = +sc.closest(".subcats").dataset.catI, k = +sc.closest(".subcat").dataset.k; D.categorias[ci].sub[k][sc.dataset.subCampo] = sc.value.trim(); return persistir(); }
+    const inp = e.target.closest("[data-campo]"); if (!inp) return; const it = inp.closest(".item");
+    if (inp.dataset.campo === "paso") { const v = parseFloat(inp.value); if (!(v > 0)) { inp.value = col(it.dataset.tipo)[+it.dataset.i].paso ?? 1; return; } col(it.dataset.tipo)[+it.dataset.i].paso = v; return persistir(); }
+    col(it.dataset.tipo)[+it.dataset.i][inp.dataset.campo] = inp.value.trim(); persistir();
+  };
   /* traducción automática: filas existentes (si el inglés está vacío o igual al español) y formularios nuevos */
   document.querySelectorAll("#vista .item:not(.nuevo)").forEach(it => {
     enlazarTraduccion(it.querySelector('[data-campo="es"]'), it.querySelector('[data-campo="en"]'), tr => { col(it.dataset.tipo)[+it.dataset.i].en = tr; persistir(); });
   });
+  document.querySelectorAll("#vista .subcat:not(.nueva-sub)").forEach(sc => {
+    const ci = +sc.closest(".subcats").dataset.catI, k = +sc.dataset.k;
+    enlazarTraduccion(sc.querySelector('[data-sub-campo="es"]'), sc.querySelector('[data-sub-campo="en"]'), tr => { D.categorias[ci].sub[k].en = tr; persistir(); });
+  });
   const esperas = new Map();
-  document.querySelectorAll("#vista form.nuevo").forEach(f => esperas.set(f, enlazarTraduccion(f.es, f.en)));
+  document.querySelectorAll("#vista form.nuevo, #vista form.nueva-sub").forEach(f => esperas.set(f, enlazarTraduccion(f.es, f.en)));
   $("vista").onclick = e => {
+    const bs = e.target.closest("[data-borra-sub]");
+    if (bs) {
+      const ci = +bs.closest(".subcats").dataset.catI, k = +bs.dataset.borraSub, c = D.categorias[ci], s = c.sub[k], uso = usoSub(c.id, s.id);
+      if (uso) return alert(t("p_sub_en_uso", { n: uso }));
+      if (confirm(t("p_sub_confirmar", { n: s.es }))) { c.sub.splice(k, 1); persistir(); }
+      return;
+    }
     const b = e.target.closest("[data-borra]"); if (!b) return;
     const it = b.closest(".item"), tipo = it.dataset.tipo, i = +it.dataset.i, c = col(tipo)[i];
     const uso = tipo === "cat" ? usoCat(c.id) : usoUni(c.id);
@@ -352,10 +391,17 @@ function vistaCategorias() {
   };
   $("vista").onsubmit = async e => {
     e.preventDefault();
+    if (e.target.classList.contains("nueva-sub")) {
+      const f = e.target, c = D.categorias[+f.dataset.catI], es = f.es.value.trim(); if (!es) return;
+      const en = (f.en.dataset.auto === "1" ? await esperas.get(f)?.() : f.en.value.trim()) || es;
+      c.sub = c.sub || [];
+      let id = slug(es), n = 2; while (c.sub.some(x => x.id === id)) id = slug(es) + "-" + n++;
+      c.sub.push({ id, es, en }); return persistir();
+    }
     const f = e.target, tipo = f.dataset.tipo, es = f.es.value.trim();
     const en = (f.en.dataset.auto === "1" ? await esperas.get(f)?.() : f.en.value.trim()) || es;
     let id = slug(es), n = 2; while (col(tipo).some(x => x.id === id)) id = slug(es) + "-" + n++;
-    col(tipo).push({ id, es, en }); persistir();
+    col(tipo).push(tipo === "uni" ? { id, es, en, paso: /^(kg|kilo|litro|lb|libra)/i.test(es) ? 0.25 : 1 } : { id, es, en }); persistir();
   };
 }
 
@@ -485,7 +531,7 @@ function vistaDatos() {
   };
   $("btnTraducir").onclick = async () => {
     const falta = x => !x.en || x.en.trim() === (x.es || "").trim();
-    const prods = D.productos.filter(falta), cats = D.categorias.filter(falta), unis = D.unidades.filter(falta);
+    const prods = D.productos.filter(falta), cats = [...D.categorias.filter(falta), ...D.categorias.flatMap(c => (c.sub || []).filter(falta))], unis = D.unidades.filter(falta);
     const total = prods.length + cats.length + unis.length;
     if (!total) return avisar(t("p_traducir_nada"));
     const b = $("btnTraducir"); b.disabled = true; b.textContent = t("p_traduciendo", { n: total });
